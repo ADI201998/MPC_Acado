@@ -30,6 +30,8 @@ setup(
             'plot_inter_wide_lane = python_plot_pkg.plot_inter_wide_lane:main',
             'plot_lane_merge = python_plot_pkg.plot_lane_merge:main',
             'plot_idm = python_plot_pkg.plot_idm:main',
+            'plot_multi_circle = python_plot_pkg.plot_multi_circle:main',
+            'plot_multi_circle_curved = python_plot_pkg.plot_multi_circle_curved:main',
         ],
     },
 )

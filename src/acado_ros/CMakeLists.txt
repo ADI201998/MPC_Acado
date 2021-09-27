@@ -118,6 +118,14 @@ add_executable(goal_reach_idm src/goal_reach_idm.cpp)
 target_link_libraries(goal_reach_idm  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(goal_reach_idm rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
+add_executable(multi_circle src/multi_circle_acado.cpp)
+target_link_libraries(multi_circle  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(multi_circle rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
+add_executable(multi_circle_curve src/multi_circle_curve.cpp)
+target_link_libraries(multi_circle_curve  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(multi_circle_curve rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
 
 install(TARGETS
   simple_mpc
@@ -129,4 +137,6 @@ install(TARGETS
   goal_reach_intersection
   intersection_wide_lane
   goal_reach_idm
+  multi_circle
+  multi_circle_curve
   DESTINATION lib/${PROJECT_NAME})

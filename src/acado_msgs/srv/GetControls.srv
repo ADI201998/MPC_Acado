@@ -1,0 +1,8 @@
+nav_msgs/Odometry odom
+geometry_msgs/Pose goal
+acado_msgs/OdomArray obstacles
+geometry_msgs/PoseArray lane_cons
+---
+geometry_msgs/Twist twist
+geometry_msgs/PoseArray path
+bool success

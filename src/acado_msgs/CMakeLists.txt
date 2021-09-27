@@ -22,6 +22,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/GetControls.srv"
   "srv/GetVelocityCmd.srv"
   "msg/OdomArray.msg"
   DEPENDENCIES geometry_msgs nav_msgs
