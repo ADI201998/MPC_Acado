@@ -35,8 +35,8 @@ int main( )
 {
 	USING_NAMESPACE_ACADO
 
-	double r_rad = 1.0;
-	double o_rad = 1.0;
+	double r_rad = 1.1;
+	double o_rad = 1.1;
 
 	// Variables:
 	DifferentialState   x    ;  // pos
@@ -65,7 +65,14 @@ int main( )
 	OnlineData b0;
 	OnlineData c0;
 
-	//OnlineData pose_array[15][3] = {{xo1, yo1, psi1}, {xo2, yo2, psi2}, {xo3, yo3, psi3}, {xo4, yo4, psi4}, {xo5, yo5, psi5}};
+    OnlineData amax;
+	OnlineData bmax;
+	OnlineData cmax;
+
+    OnlineData amin;
+	OnlineData bmin;
+	OnlineData cmin;
+
 
 
 	Control             j    ;  // angular acc
@@ -85,10 +92,13 @@ int main( )
 	// (theta - theta_g)**2
 
 	// Reference functions and weighting matrices:
-	Expression dist = sqrt(pow(a0*x + b0*y + c0, 2))/sqrt(pow(a0, 2) + pow(b0, 2));
-
+	//Expression d1 = pow(x-xo1, 2) + pow(y-yo1, 2);
+	//Expression d2 = pow(x-xo2, 2) + pow(y-yo2, 2);
+	//Expression d3 = pow(x-xo3, 2) + pow(y-yo3, 2);
+	//Expression dist = sqrt(pow(pow(x - a0, 2) + pow(y - b0, 2) - pow(c0, 2), 2));
+    Expression dist = sqrt(pow(sqrt(pow(x-a0, 2) + pow(y-b0, 2)) - c0, 2));
 	Function h, hN;
-	h << x << y << v << a << j << dist ;//<< cost1 << cost2 << cost3 << cost4 << cost5;				// (x - xg)**2 + (y- yg)**2 + (a)**2 + (j)**2
+	h << x << y << v << a << j << dist ;				// (x - xg)**2 + (y- yg)**2 + (a)**2 + (j)**2
 	hN << x << y << theta;
 
 	// Provide defined weighting matrices:
@@ -115,17 +125,18 @@ int main( )
 	ocp.subjectTo( f );
 	ocp.minimizeLSQ(W, h);
 	ocp.minimizeLSQEndTerm(WN, hN);
-	ocp.setNOD(18);
+	ocp.setNOD(24);
 
-	ocp.subjectTo( -100 <= x <= 1e12);
-	ocp.subjectTo( -8.0 <= y <= 8.0);
 	ocp.subjectTo( -2.0 <= v <= 1.5*6);
 	ocp.subjectTo( -2.0 <= w <= 2.0 );
 	
 	ocp.subjectTo(-5 <= a <= 5);
 	ocp.subjectTo(-2 <= j <= 2);
 
-	ocp.subjectTo(sqrt(pow(x-(xo1-2*o_rad*cos(psi1)), 2) + pow(y-(yo1-2*o_rad*sin(psi1)), 2)) >= r_rad+o_rad );
+	ocp.subjectTo(pow(x-amax,2) + pow(y-bmax,2) - pow(cmax,2) <= 0);
+    ocp.subjectTo(pow(x-amin,2) + pow(y-bmin,2) - pow(cmin,2) >= 0);
+
+    ocp.subjectTo(sqrt(pow(x-(xo1-2*o_rad*cos(psi1)), 2) + pow(y-(yo1-2*o_rad*sin(psi1)), 2)) >= r_rad+o_rad );
 	ocp.subjectTo(sqrt(pow(x-xo1, 2) + pow(y-yo1, 2)) >= r_rad+o_rad );
 	ocp.subjectTo(sqrt(pow(x-(xo1+2*o_rad*cos(psi1)), 2) + pow(y-(yo1+2*o_rad*sin(psi1)), 2)) >= r_rad+o_rad );
 	ocp.subjectTo(sqrt(pow((x-2*r_rad*cos(theta))-(xo1-2*o_rad*cos(psi1)), 2) + pow((y-2*r_rad*sin(theta))-(yo1-2*o_rad*sin(psi1)), 2)) >= r_rad+o_rad );
@@ -174,7 +185,6 @@ int main( )
 	ocp.subjectTo(sqrt(pow((x+2*r_rad*cos(theta))-(xo5-2*o_rad*cos(psi5)), 2) + pow((y+2*r_rad*sin(theta))-(yo5-2*o_rad*sin(psi5)), 2)) >= r_rad+o_rad );
 	ocp.subjectTo(sqrt(pow((x+2*r_rad*cos(theta))-xo5, 2) + pow((y+2*r_rad*sin(theta))-yo5, 2)) >= r_rad+o_rad );
 	ocp.subjectTo(sqrt(pow((x+2*r_rad*cos(theta))-(xo5+2*o_rad*cos(psi5)), 2) + pow((y+2*r_rad*sin(theta))-(yo5+2*o_rad*sin(psi5)), 2)) >= r_rad+o_rad );
-    
 
 	// Export the code:
 	OCPexport mpc( ocp );
