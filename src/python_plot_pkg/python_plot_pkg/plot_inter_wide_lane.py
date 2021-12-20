@@ -236,9 +236,10 @@ class PlotPath(Node):
         plt.plot([504,504], [-200000, -16], linestyle='--', color='black')
         plt.plot([500,500], [-200000, -16], color='black', linewidth=3.0)
 
-        plt.ylim(self.agent_p[1]-80, self.agent_p[1]+80) 
+        plt.ylim(self.agent_p[1]-40, self.agent_p[1]+40) 
         #plt.xlim(self.agent_p[0]-40, self.agent_p[0]+40)
         plt.xlim(self.agent_p[0]-80, self.agent_p[0]+80)
+        plt.tight_layout()
         """if self.x_lim_max < self.agent_p[0]+50:
             self.x_lim_min = self.agent_p[0]-20
             self.x_lim_max = self.agent_p[0] + 100

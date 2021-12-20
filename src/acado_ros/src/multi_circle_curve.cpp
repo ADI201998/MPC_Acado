@@ -142,8 +142,8 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
         acadoVariables.W[NY*NY*i + (NY+1)*2] = 10;          //v
         //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
         //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
-        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1000;        //a
-        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1000;        //j
+        acadoVariables.W[NY*NY*i + (NY+1)*3] = 100;        //a
+        acadoVariables.W[NY*NY*i + (NY+1)*4] = 100;        //j
         acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.5;         //lane_dist
     }
 

@@ -126,6 +126,10 @@ add_executable(multi_circle_curve src/multi_circle_curve.cpp)
 target_link_libraries(multi_circle_curve  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(multi_circle_curve rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
+add_executable(combined_mpc src/combined_mpc.cpp)
+target_link_libraries(combined_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(combined_mpc rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
 
 install(TARGETS
   simple_mpc
@@ -139,4 +143,5 @@ install(TARGETS
   goal_reach_idm
   multi_circle
   multi_circle_curve
+  combined_mpc
   DESTINATION lib/${PROJECT_NAME})
