@@ -21,6 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'combined_sim = simulation_env.combined_sim:main',
+            'circle_sim = simulation_env.circle_env:main',
+            'combined_sim_async = simulation_env.combined_sim_async:main',
         ],
     },
 )

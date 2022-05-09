@@ -55,6 +55,7 @@ class GoalReach : public rclcpp::Node
     double time;
     int mpc_iter;
     acado_timer t;
+    std::vector<double> time_arr;
     rclcpp::Service<acado_msgs::srv::GetVelocityCmd>::SharedPtr service;
     size_t count_;
 };
@@ -304,6 +305,9 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetVelocityCmd
     {
         mpc_iter+=1;
         time+=te;
+        time_arr.push_back(te);
+        RCLCPP_INFO(this->get_logger(), "Min: %.5f, Max: %.5f, Avg: %.5f",*min_element(time_arr.begin(), time_arr.end()),
+                    *max_element(time_arr.begin(), time_arr.end()), time/mpc_iter);
     }
     ns = 1;
     geometry_msgs::msg::Twist cmd_vel;

@@ -140,11 +140,11 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
         acadoVariables.W[NY*NY*i + (NY+1)*3] = 50;
         acadoVariables.W[NY*NY*i + (NY+1)*4] = 50;
         acadoVariables.W[NY*NY*i + (NY+1)*5] = 40.0;
-        acadoVariables.W[NY*NY*i + (NY+1)*6] = 100;
+        /*acadoVariables.W[NY*NY*i + (NY+1)*6] = 100;
         acadoVariables.W[NY*NY*i + (NY+1)*7] = 100;
         acadoVariables.W[NY*NY*i + (NY+1)*8] = 100;
         acadoVariables.W[NY*NY*i + (NY+1)*9] = 100;
-        acadoVariables.W[NY*NY*i + (NY+1)*10] = 100;
+        acadoVariables.W[NY*NY*i + (NY+1)*10] = 100;*/
     }
 
     acadoVariables.WN[(NYN+1)*0] = 0;
@@ -167,6 +167,20 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
 
         acadoVariables.ubAValues[i*2+N*2+0] = 0;
         acadoVariables.ubAValues[i*2+N*2+1] = 1e12;
+    }
+    for (int i = 0; i < N; i++)
+    {
+        acadoVariables.lbAValues[i*5+N*4+0] = 2.2;
+        acadoVariables.lbAValues[i*5+N*4+1] = 2.2;
+        acadoVariables.lbAValues[i*5+N*4+2] = 2.2;
+        acadoVariables.lbAValues[i*5+N*4+3] = 2.2;
+        acadoVariables.lbAValues[i*5+N*4+4] = 2.2;
+
+        acadoVariables.ubAValues[i*5+N*4+0] = 1e12;
+        acadoVariables.ubAValues[i*5+N*4+1] = 1e12;
+        acadoVariables.ubAValues[i*5+N*4+2] = 1e12;
+        acadoVariables.ubAValues[i*5+N*4+3] = 1e12;
+        acadoVariables.ubAValues[i*5+N*4+4] = 1e12;
     }
 
     for (int i = 0; i < N; i++)

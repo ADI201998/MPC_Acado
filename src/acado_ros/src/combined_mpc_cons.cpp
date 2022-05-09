@@ -71,7 +71,7 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
     service = this->create_service<acado_msgs::srv::GetControls>("/get_vel", std::bind(&GoalReach::get_vel_cb, this, _1, _2));
     got_odom = false;
     got_pa = false;
-    ns = 5;
+    ns = 15;
     time = 0.0;
     mpc_iter = 0;
 
@@ -99,18 +99,8 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
         acadoVariables.y[ NY * i + 3 ] = 0.0;	// linear acc
         acadoVariables.y[ NY * i + 4 ] = 0.0; 	//  anuglar acc
         //acadoVariables.y[ NY * i + 5 ] = 0.0; 	//  dist to line
-        acadoVariables.y[ NY * i + 5 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 6 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 7 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 8 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 9 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 10 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 11 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 12 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 13 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 14 ] = 0.0; 	//  obs
-        acadoVariables.y[ NY * i + 15 ] = 0.0; 	//  dist
-        acadoVariables.y[ NY * i + 16 ] = 0.0; 	//  dist
+        acadoVariables.y[ NY * i + 5 ] = 0.0; 	//  dist
+        acadoVariables.y[ NY * i + 6 ] = 0.0; 	//  dist
         //acadoVariables.y[ NY * i + 4 ] = 0.0;
         //acadoVariables.y[ NY * i + 5 ] = 0.0;
         //acadoVariables.y[ NY * i + 6 ] = 0.0;
@@ -211,26 +201,16 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
         acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
         //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
         //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
-        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
-        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e5;        //j
+        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e2;        //a
+        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e2;        //j
         //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
-        acadoVariables.W[NY*NY*i + (NY+1)*5] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*6] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*7] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*8] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*9] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*10] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*11] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*12] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*13] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*14] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*15] = 1.0;
-        acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
+        acadoVariables.W[NY*NY*i + (NY+1)*5] = 1.0;
+        acadoVariables.W[NY*NY*i + (NY+1)*6] = 0.0;
     }
 
-    acadoVariables.WN[(NYN+1)*0] = 2.5*1e3;
-	acadoVariables.WN[(NYN+1)*1] = 2.5*1e3;
-	acadoVariables.WN[(NYN+1)*2] = 5*1e5;
+    acadoVariables.WN[(NYN+1)*0] = 2.5*1e1;
+	acadoVariables.WN[(NYN+1)*1] = 2.5*1e1;
+	acadoVariables.WN[(NYN+1)*2] = 5*1e1;
 
     /*for (int i = 0; i < N; i++)
     {
@@ -276,11 +256,31 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
 
     for (int i = 0; i < N; i++)
     {
-        acadoVariables.lbAValues[i*2+N*2+0] = 0.0;
-        acadoVariables.lbAValues[i*2+N*2+1] = -1e12;
+        acadoVariables.lbAValues[i*12+N*2+0] = 0.0;
+        acadoVariables.lbAValues[i*12+N*2+1] = -1e12;
+        acadoVariables.lbAValues[i*12+N*2+2] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+3] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+4] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+5] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+6] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+7] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+8] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+9] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+10] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+11] = 2.2;
 
-        acadoVariables.ubAValues[i*2+N*2+0] = 1e12;
-        acadoVariables.ubAValues[i*2+N*2+1] = 0.0;
+        acadoVariables.ubAValues[i*12+N*2+0] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+1] = 0.0;
+        acadoVariables.ubAValues[i*12+N*2+2] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+3] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+4] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+5] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+6] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+7] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+8] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+9] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+10] = 1e12;
+        acadoVariables.ubAValues[i*12+N*2+11] = 1e12;
     }
 
     /*for (int i = 0; i < N; i++)
@@ -456,13 +456,13 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetControls::R
                 continue;
             if(lane_cons.poses[0].position.y == 0.0)
             {
-                acadoVariables.W[NY*NY*i + (NY+1)*15] = 1.0;
-                acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
+                acadoVariables.W[NY*NY*i + (NY+1)*5] = 1.0;
+                acadoVariables.W[NY*NY*i + (NY+1)*6] = 0.0;
             }
             else
             {
-                acadoVariables.W[NY*NY*i + (NY+1)*15] = 0.0;
-                acadoVariables.W[NY*NY*i + (NY+1)*16] = 50.0;
+                acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;
+                acadoVariables.W[NY*NY*i + (NY+1)*6] = 50.0;
             }
             
 

@@ -39,8 +39,8 @@ class PlotPath(Node):
         self.rr = 108.0
         self.lr = 100.0
         self.mr = 104.0
-        self.rm = 106.25
-        self.lm = 101.75
+        self.rm = 106.0
+        self.lm = 102.0
         self.theta_g = 300.0
         self.cur_rad = self.rm
         self.index = 1

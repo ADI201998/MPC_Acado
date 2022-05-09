@@ -2,6 +2,7 @@ import numpy as np
 import random
 import matplotlib.pylab as plt
 import enum
+import threading
 
 import rclpy
 from rclpy.node import Node
@@ -39,8 +40,10 @@ class Environment(Node):
             
         self.lane_ids = []
         self.radius = 116.0
+        self.local_path = PoseArray()
+        self.v_controls = [14.8, 0.0]
         self.agent_pose = [0.0, 14.0, 0.0]
-        self.agent_vel = [15.0, 0.0]
+        self.agent_vel = [14.8, 0.0]
         self.dt = 0.1
         self.acc = 0.5
         self.path_index = -1.0
@@ -65,8 +68,6 @@ class Environment(Node):
         angles = np.arange(0, 360.1, 0.1)
         angles_left = angles[900:2701]
         angles_right = np.concatenate([angles[2700:3600], angles[0:901]])
-        self.goal_p = Pose()
-        self.min_obs = []
 
         self.obstacles_inner_lane = np.array([[-200.0, 14.0, 0.0, 7.8, 0.0, 8.0, 102],
                                                 [-160.0, 14.0, 0.0, 8.3, 0.0, 8.0, 102],
@@ -226,16 +227,16 @@ class Environment(Node):
                                                 ])
 
 
-        self.obstacles_intersection_north = np.array([[202, -22.0, 90*2*np.pi/360, 7.8, 0.0, 8.0, 0],
-                                                [202.0, 38.0, 90*2*np.pi/360, 8.3, 0.0, 8.0, 0],
-                                                [202.0, 98.0, 90*2*np.pi/360, 7.9, 0.0, 8.0, 0],
+        self.obstacles_intersection_north = np.array([[202, -20.0, 90*2*np.pi/360, 7.8, 0.0, 8.0, 0],
+                                                [202.0, 40.0, 90*2*np.pi/360, 8.3, 0.0, 8.0, 0],
+                                                [202.0, 100.0, 90*2*np.pi/360, 7.9, 0.0, 8.0, 0],
                                                 #######################
-                                                [206.0, -37.0, 90*2*np.pi/360, 9.8, 0.0, 10.0, 0],
-                                                [206.0, 38.0, 90*2*np.pi/360, 9.9, 0.0, 10.0, 0],
-                                                [206.0, 93.0, 90*2*np.pi/360, 10.3, 0.0, 10.0, 0],
+                                                [206.0, -35.0, 90*2*np.pi/360, 9.8, 0.0, 10.0, 0],
+                                                [206.0, 40.0, 90*2*np.pi/360, 9.9, 0.0, 10.0, 0],
+                                                [206.0, 95.0, 90*2*np.pi/360, 10.3, 0.0, 10.0, 0],
                                                 #######################
-                                                [210.0, 13.0, 90*2*np.pi/360, 12.3, 0.0, 12.0, 0],
-                                                [210.0, 88.0, 90*2*np.pi/360, 11.8, 0.0, 12.0, 0],
+                                                [210.0, 15.0, 90*2*np.pi/360, 12.3, 0.0, 12.0, 0],
+                                                [210.0, 90.0, 90*2*np.pi/360, 11.8, 0.0, 12.0, 0],
                                                 #[210.0, 110.0, 90*2*np.pi/360, 11.9, 0.0, 12.0, 0],
                                                 ])
 
@@ -306,9 +307,6 @@ class Environment(Node):
                                 self.obstacles_intersection_south, self.obstacles_intersection_north))
         dist = np.sqrt((obs_pos[:,0] - self.agent_pose[0])**2 + (obs_pos[:,1] - self.agent_pose[1])**2)
         sorted_obs = obs_pos[dist.argsort()]
-        dist = ((self.agent_pose[0] - sorted_obs[:,0])**2 + (self.agent_pose[1] - sorted_obs[:,1])**2)**0.5
-        self.min_obs.append(np.min(dist))
-        print("Min_dist = ", np.min(self.min_obs))
         obstacles = OdomArray()
         for i in range(10):
             odom = Odometry()
@@ -328,27 +326,23 @@ class Environment(Node):
             lane_cons, goal = self.lane_cons_func[self.current_laneid](0.0)
         else:
             lane_cons, goal = self.get_lane_cons()
-            print("Last Point = ", self.path_x[-1], self.path_y[-1])
+            #print("Last Point = ", self.path_x[-1], self.path_y[-1])
         #lane_cons, goal = self.br_cons(0.0)
         self.req.goal = goal
         self.req.lane_cons = lane_cons
-        print("Current Lane = ", self.current_laneid)
-        print("Next Lane = ", self.next_laneid)
-        print("Goal = ", goal)
-        #print("Lane Cons == ", self.req.lane_cons)
-        self.goal_p = goal
+        print("Current Lane = ", self.current_laneid, end=" ")
+        print("Next Lane = ", self.next_laneid, end=" ")
+        print("Goal = ", goal.position.x, goal.position.y)
+        print("    Lane = ", lane_cons.poses)
         self.future = self.cli.call_async(self.req)
 
 
     def br_cons(self, index):
-        print("br_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [14.0, 10.0, 6.0]
-        lanes = [10.0]
-        goal_pose.position.x = self.agent_pose[0] + 85.0
+        lanes = [14.0, 10.0, 6.0]
+        goal_pose.position.x = self.agent_pose[0] + 150.0
         goal_pose.position.y = random.choice(lanes)
-        goal_pose.orientation.z = 0.0
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -383,14 +377,11 @@ class Environment(Node):
         return lane_info, goal_pose
 
     def bl_cons(self, index):
-        print("bl_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [2.0, -2.0, -6.0]
-        lanes = [-2.0]
-        goal_pose.position.x = self.agent_pose[0] - 85.0
+        lanes = [2.0, -2.0, -6.0]
+        goal_pose.position.x = self.agent_pose[0] - 150.0
         goal_pose.position.y = random.choice(lanes)
-        goal_pose.orientation.z = np.pi
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -425,23 +416,14 @@ class Environment(Node):
         return lane_info, goal_pose
 
     def tr_cons(self, index):
-        print("tr_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [230.0, 234.0, 238.0]
-        lanes = [234.0]
-        goal_pose.position.x = self.agent_pose[0] + 85.0
+        lanes = [230.0, 234.0, 238.0]
+        goal_pose.position.x = self.agent_pose[0] + 150.0
         goal_pose.position.y = random.choice(lanes)
-        goal_pose.orientation.z = 0.0
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
-        lane_info.poses.append(info)
-
-        info = Pose()
-        info.position.x = 0.0
-        info.position.y = 1.0
-        info.position.z = -goal_pose.position.y
         lane_info.poses.append(info)
 
         info = Pose()   #max rad cons
@@ -463,19 +445,15 @@ class Environment(Node):
         info.orientation.z = 0.0
         info.orientation.w = -239.0
         lane_info.poses.append(info)
-        print(lane_info)
 
         return lane_info, goal_pose
 
     def tl_cons(self, index):
-        print("tl_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [218.0, 222.0, 226.0]
-        lanes = [222.0]
-        goal_pose.position.x = self.agent_pose[0] - 85.0
+        lanes = [218.0, 222.0, 226.0]
+        goal_pose.position.x = self.agent_pose[0] - 150.0
         goal_pose.position.y = random.choice(lanes)
-        goal_pose.orientation.z = np.pi
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -510,14 +488,11 @@ class Environment(Node):
         return lane_info, goal_pose
 
     def ls_cons(self, index):
-        print("ls_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [-202.0, -206.0, -210.0]
-        lanes = [-206.0]
+        lanes = [-202.0, -206.0, -210.0]
         goal_pose.position.x = random.choice(lanes)
-        goal_pose.position.y = self.agent_pose[1] - 85.0
-        goal_pose.orientation.z = 3*np.pi/2
+        goal_pose.position.y = self.agent_pose[1] - 150.0
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -552,14 +527,11 @@ class Environment(Node):
         return lane_info, goal_pose
 
     def ln_cons(self, index):
-        print("ln_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [-214.0, -218.0, -222.0]
-        lanes = [-218.0]
+        lanes = [-214.0, -218.0, -222.0]
         goal_pose.position.x = random.choice(lanes)
-        goal_pose.position.y = self.agent_pose[1] + 85.0
-        goal_pose.orientation.z = np.pi/2
+        goal_pose.position.y = self.agent_pose[1] + 150.0
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -590,26 +562,15 @@ class Environment(Node):
         info.orientation.z = 0.0
         info.orientation.w = 213.0
         lane_info.poses.append(info)
-        print(lane_info)
 
         return lane_info, goal_pose
 
     def rn_cons(self, index):
-        print("rn_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [202.0, 206.0, 210.0]
-        lanes = [206.0]
+        lanes = [202.0, 206.0, 210.0]
         goal_pose.position.x = random.choice(lanes)
-        goal_pose.position.y = self.agent_pose[1] + 85.0
-        dist = ((goal_pose.position.x-self.agent_pose[0])**2 + (goal_pose.position.y-self.agent_pose[1])**2)**0.5
-        #if dist>88:
-        #    goal_pose.position.x = random.choice(lanes)
-        #    goal_pose.position.y = self.agent_pose[1] + 0
-        #else:
-        #    goal_pose.position.x = random.choice(lanes)
-        #    goal_pose.position.y = self.agent_pose[1] + 85.0
-        goal_pose.orientation.z = np.pi/2
+        goal_pose.position.y = self.agent_pose[1] + 150.0
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -644,14 +605,11 @@ class Environment(Node):
         return lane_info, goal_pose
 
     def rs_cons(self, index):
-        print("rs_cons")
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [214.0, 218.0, 222.0]
-        lanes = [218.0]
+        lanes = [214.0, 218.0, 222.0]
         goal_pose.position.x = random.choice(lanes)
-        goal_pose.position.y = self.agent_pose[1] - 85.0
-        goal_pose.orientation.z = 3*np.pi/2
+        goal_pose.position.y = self.agent_pose[1] - 150.0
         info = Pose()
         info.position.x = float(index)
         info.position.y = 0.0
@@ -688,8 +646,7 @@ class Environment(Node):
     def lci_cons(self, index):
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [102.0, 106.0, 110.0]
-        lanes = [106.0]
+        lanes = [102.0, 106.0, 110.0]
         
 
         theta = np.arctan2(self.agent_pose[1]-(116), self.agent_pose[0]-(-224))*2*180/(2*np.pi)
@@ -697,11 +654,9 @@ class Environment(Node):
             theta = 360+theta
         
         val = random.choice(lanes)
-        theta_g = theta+45.0
-        goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360) + -224.0
-        goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360) + 116.0
-        goal_pose.orientation.z = theta_g*np.pi/180 + np.pi/2
-
+        theta_g = theta+75.0
+        goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360)
+        goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360)
 
         info = Pose()
         info.position.x = float(index)
@@ -739,18 +694,16 @@ class Environment(Node):
     def lco_cons(self, index):
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [114.0, 118.0, 122.0]
-        lanes = [118.0]
+        lanes = [114.0, 118.0, 122.0]
 
         theta = np.arctan2(self.agent_pose[1]-(116), self.agent_pose[0]-(-224))*2*180/(2*np.pi)
         if theta<0:
             theta = 360+theta
         
         val = random.choice(lanes)
-        theta_g = theta-45.0
-        goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360) + -224.0
-        goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360) + 116.0
-        goal_pose.orientation.z = theta_g*np.pi/180 - np.pi/2
+        theta_g = theta-75.0
+        goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360)
+        goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360)
 
         info = Pose()
         info.position.x = float(index)
@@ -788,21 +741,16 @@ class Environment(Node):
     def rci_cons(self, index):
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [102.0, 106.0, 110.0]
-        lanes = [106.0]
+        lanes = [102.0, 106.0, 110.0]
 
         theta = np.arctan2(self.agent_pose[1]-(116), self.agent_pose[0]-(224))*2*180/(2*np.pi)
         if theta<0:
             theta = 360+theta
         
         val = random.choice(lanes)
-        theta_g = theta+45.0
+        theta_g = theta+75.0
         goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360) + 224.0
         goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360) + 116.0
-        t = theta_g*np.pi/180 + np.pi/2
-        if t>2*np.pi:
-            t = t - 2*np.pi
-        goal_pose.orientation.z = t
 
         info = Pose()
         info.position.x = float(index)
@@ -840,20 +788,16 @@ class Environment(Node):
     def rco_cons(self, index):
         lane_info = PoseArray()
         goal_pose = Pose()
-        #lanes = [114.0, 118.0, 122.0]
-        lanes = [118.0]
+        lanes = [114.0, 118.0, 122.0]
 
         theta = np.arctan2(self.agent_pose[1]-(116), self.agent_pose[0]-(224))*2*180/(2*np.pi)
         if theta<0:
             theta = 360+theta
         
         val = random.choice(lanes)
-        theta_g = theta-45.0
-        goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360) + 224.0
-        goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360) + 116.0
-        goal_pose.orientation.z = theta_g*np.pi/180 - np.pi/2
-        if goal_pose.orientation.z>np.pi:
-            goal_pose.orientation.z = 2*np.pi - goal_pose.orientation.z
+        theta_g = theta-75.0
+        goal_pose.position.x = val*np.cos(theta_g*2*np.pi/360)
+        goal_pose.position.y = val*np.sin(theta_g*2*np.pi/360)
 
         info = Pose()
         info.position.x = float(index)
@@ -891,53 +835,47 @@ class Environment(Node):
     def get_lane_cons(self):
         index = 0
         if self.current_laneid == LaneID.BR:
-            print("BR Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>-224 and self.path_y[i]<16:
                     index = float(i)
-                    print("br index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_x[-1]>200 and self.current_laneid == self.next_laneid:
-                self.next_laneid = LaneID.RN#random.choice([LaneID.RN, LaneID.RCI])
+                self.next_laneid = LaneID.RCI#random.choice([LaneID.RN, LaneID.RCI])
             if self.next_laneid == LaneID.RCI:
-                self.current_laneid = self.next_laneid if self.path_x[-1]>=226 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_x[-1]>=224 else self.current_laneid
                 return lane_cons, goal
-            elif self.next_laneid == LaneID.RN and self.path_x[-1]>=202:
+            elif self.next_laneid == LaneID.RN:
                 self.current_laneid = self.next_laneid
             
             return lane_cons, goal
             
         elif self.current_laneid == LaneID.BL:
-            print("BL Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]<224 and self.path_y[i]<4:
                     index = float(i)
-                    print("bl index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
-            print(lane_cons, goal)
+            #print(lane_cons, goal)
             if self.path_x[-1]<-212 and self.current_laneid == self.next_laneid:
                 self.next_laneid = random.choice([LaneID.LN, LaneID.LCO])
             if self.next_laneid == LaneID.LCO:
-                self.current_laneid = self.next_laneid if self.path_x[-1]<=-226 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_x[-1]<=-224 else self.current_laneid
                 return lane_cons, goal
-            elif self.next_laneid == LaneID.LN and self.path_x[-1]<=-214:
+            elif self.next_laneid == LaneID.LN:
                 self.current_laneid = self.next_laneid
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.TR:
-            print("TR Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>-224 and self.path_y[i]>228:
                     index = float(i)
-                    print("tr index = ", index, self.path_x[i], self.path_y[i])
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_x[-1]>212 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.RCO#random.choice([LaneID.RS, LaneID.RCO])
             if self.next_laneid == LaneID.RCO:
-                self.current_laneid = self.next_laneid if self.path_x[-1]>=230 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_x[-1]<=-224 else self.current_laneid
                 return lane_cons, goal
             elif self.next_laneid == LaneID.RS:
                 self.current_laneid = self.next_laneid
@@ -945,79 +883,69 @@ class Environment(Node):
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.TL:
-            print("TL Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]<224 and self.path_y[i]>216:
                     index = float(i)
-                    print("tl index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_x[-1]<-200 and self.current_laneid == self.next_laneid:
                 self.next_laneid = random.choice([LaneID.LS, LaneID.LCI])
             if self.next_laneid == LaneID.LCI:
-                self.current_laneid = self.next_laneid if self.path_x[-1]<=-226 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_x[-1]<=-224 else self.current_laneid
                 return lane_cons, goal
-            elif self.next_laneid == LaneID.LS and self.path_x[-1]<=-202:
+            elif self.next_laneid == LaneID.LS:
                 self.current_laneid = self.next_laneid
             
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.RCI:
-            print("RCI Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>=224 and self.path_y[i]<16:
                     index = float(i)
-                    print("rci index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
-            if self.path_x[-1]<=222 and self.path_y[-1]>116 and self.current_laneid == self.next_laneid:
+            if self.path_x[-1]<=224 and self.path_y[-1]>116 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.RS#random.choice([LaneID.RS, LaneID.TL])
             self.current_laneid = self.next_laneid
             return lane_cons, goal
                 
         elif self.current_laneid == LaneID.RCO:
-            print("RCO Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>=224 and self.path_y[i]>228:
                     index = float(i)
-                    print("rco index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_x[-1]<=224 and self.path_y[-1]<116 and self.current_laneid == self.next_laneid:
-                self.next_laneid =LaneID.RN#random.choice([LaneID.BL, LaneID.RN])
+                self.next_laneid = LaneID.RN#random.choice([LaneID.BL, LaneID.RN])
             if self.next_laneid == LaneID.RN:
-                self.current_laneid = self.next_laneid if self.path_x[-1]<=210 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_x[-1]<=212 else self.current_laneid
                 return lane_cons, goal
-            elif self.next_laneid == LaneID.BL and self.path_x[-1]<=222:
+            elif self.next_laneid == LaneID.BL:
                 self.current_laneid = self.next_laneid
             
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.LCI:
-            print("LCI Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]<=-224 and self.path_y[i]>216:
                     index = float(i)
-                    print("lci index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
-            if self.path_x[-1]>=-222 and self.path_y[-1]<116 and self.current_laneid == self.next_laneid:
+            if self.path_x[-1]>=-224 and self.path_y[-1]<116 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.BR#random.choice([LaneID.BR, LaneID.LN])
             self.current_laneid = self.next_laneid
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.LCO:
-            print("LCO Cons")
             for i in range(len(self.path_x)):
-                if self.path_x[i]<=-224 and (self.path_y[i]<4 or self.path_y[i]>-8):
+                if self.path_x[i]<=-224 and self.path_y[i]<4:
                     index = float(i)
-                    print("lco index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_x[-1]>=-224 and self.path_y[-1]>116 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.TR#random.choice([LaneID.TR, LaneID.LS])
             if self.next_laneid == LaneID.LS:
-                self.current_laneid = self.next_laneid if self.path_x[-1]>=-210 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_x[-1]>=-212 else self.current_laneid
                 return lane_cons, goal
             elif self.next_laneid == LaneID.TR:
                 self.current_laneid = self.next_laneid
@@ -1025,17 +953,15 @@ class Environment(Node):
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.RN:
-            print("RN Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>200 and self.path_x[i]<=212 and self.path_y[i]>4:
                     index = float(i)
-                    print("rn index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
-            if self.path_y[-1]>=218 and self.current_laneid == self.next_laneid:
+            if self.path_y[-1]>=216 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.TL#random.choice([LaneID.TL, LaneID.RCO])
             if self.next_laneid == LaneID.RCO:
-                self.current_laneid = self.next_laneid if self.path_y[-1]>=230 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_y[-1]>=228 else self.current_laneid
                 return lane_cons, goal
             elif self.next_laneid == LaneID.TL:
                 self.current_laneid = self.next_laneid
@@ -1043,17 +969,15 @@ class Environment(Node):
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.RS:
-            print("RS Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>212 and self.path_x[i]<224 and self.path_y[i]<240:
                     index = float(i)
-                    print("rs index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
-            if self.path_y[-1]<=14 and self.current_laneid == self.next_laneid:
+            if self.path_y[-1]<=16 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.BL#random.choice([LaneID.BL, LaneID.RCI])
             if self.next_laneid == LaneID.BL:
-                self.current_laneid = self.next_laneid if self.path_y[-1]<=2 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_y[-1]<=4 else self.current_laneid
                 return lane_cons, goal
             elif self.next_laneid == LaneID.RCI:
                 self.current_laneid = self.next_laneid
@@ -1061,17 +985,15 @@ class Environment(Node):
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.LN:
-            print("LN Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>-224 and self.path_x[i]<-212 and self.path_y[i]>-8:
                     index = float(i)
-                    print("ln index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_y[-1]>=216 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.TR#random.choice([LaneID.TR, LaneID.LCI])
             if self.next_laneid == LaneID.TR:
-                self.current_laneid = self.next_laneid if self.path_y[-1]>=230 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_y[-1]>=228 else self.current_laneid
                 return lane_cons, goal
             elif self.next_laneid == LaneID.LCI:
                 self.current_laneid = self.next_laneid
@@ -1079,17 +1001,15 @@ class Environment(Node):
             return lane_cons, goal
 
         elif self.current_laneid == LaneID.LS:
-            print("LS Cons")
             for i in range(len(self.path_x)):
                 if self.path_x[i]>-212 and self.path_x[i]<-200 and self.path_y[i]<240:
                     index = float(i)
-                    print("ls index = ", index)
                     break
             lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
             if self.path_y[-1]<=16 and self.current_laneid == self.next_laneid:
                 self.next_laneid = LaneID.BR#random.choice([LaneID.BR, LaneID.RCO])
             if self.next_laneid == LaneID.RCO:
-                self.current_laneid = self.next_laneid if self.path_y[-1]<=2 else self.current_laneid
+                self.current_laneid = self.next_laneid if self.path_y[-1]<=4 else self.current_laneid
                 return lane_cons, goal
             elif self.next_laneid == LaneID.BR:
                 self.current_laneid = self.next_laneid
@@ -1105,9 +1025,9 @@ class Environment(Node):
                 
 
 
-    def update_agent(self, twist):
-        self.agent_vel[0] = twist.linear.x
-        self.agent_vel[1] = twist.angular.z
+    def update_agent(self):
+        self.agent_vel[0] = self.v_controls[0]
+        self.agent_vel[1] = self.v_controls[1]
         self.agent_pose[2] = self.agent_pose[2] + self.agent_vel[1]*self.dt
         self.agent_pose[0] = self.agent_pose[0] + self.agent_vel[0]*np.cos(self.agent_pose[2])*self.dt
         self.agent_pose[1] = self.agent_pose[1] + self.agent_vel[0]*np.sin(self.agent_pose[2])*self.dt
@@ -1223,10 +1143,10 @@ class Environment(Node):
                     decc = a
                 self.obstacles_intersection_north[i][3] += decc * self.dt
 
-            if self.agent_pose[1] - self.obstacles_intersection_north[i][1]>35:
-                self.obstacles_intersection_north[i][1] = self.agent_pose[1] + 70.0
-            elif self.obstacles_intersection_north[i][1] - self.agent_pose[1]>70:
-                self.obstacles_intersection_north[i][1] = self.agent_pose[1] - 35.0
+            if self.agent_pose[1] - self.obstacles_intersection_north[i][1]>70:
+                self.obstacles_intersection_north[i][1] = self.agent_pose[1] + 120.0
+            elif self.obstacles_intersection_north[i][1] - self.agent_pose[1]>120:
+                self.obstacles_intersection_north[i][1] = self.agent_pose[1] - 70.0
             self.obstacles_intersection_north[i][2] = self.obstacles_intersection_north[i][2] + self.obstacles_intersection_north[i][4]*self.dt
             self.obstacles_intersection_north[i][0] = self.obstacles_intersection_north[i][0] + \
                                             self.obstacles_intersection_north[i][3]*np.cos(self.obstacles_intersection_north[i][2])*self.dt
@@ -1291,10 +1211,10 @@ class Environment(Node):
                     decc = a
                 self.obstacles_intersection_south[i][3] += decc * self.dt
 
-            if -self.agent_pose[1] + self.obstacles_intersection_south[i][1]>35:
-                self.obstacles_intersection_south[i][1] = self.agent_pose[1] - 70.0
-            elif -self.obstacles_intersection_south[i][1] + self.agent_pose[1]>70:
-                self.obstacles_intersection_south[i][1] = self.agent_pose[1] + 35.0
+            if -self.agent_pose[1] + self.obstacles_intersection_south[i][1]>70:
+                self.obstacles_intersection_south[i][1] = self.agent_pose[1] - 120.0
+            elif -self.obstacles_intersection_south[i][1] + self.agent_pose[1]>120:
+                self.obstacles_intersection_south[i][1] = self.agent_pose[1] + 70.0
             self.obstacles_intersection_south[i][2] = self.obstacles_intersection_south[i][2] + self.obstacles_intersection_south[i][4]*self.dt
             self.obstacles_intersection_south[i][0] = self.obstacles_intersection_south[i][0] + \
                                             self.obstacles_intersection_south[i][3]*np.cos(self.obstacles_intersection_south[i][2])*self.dt
@@ -1316,8 +1236,8 @@ class Environment(Node):
         for i in self.obstacles_intersection_north:
             obs = plt.Circle((i[0], i[1]), 1.0, color='r')
             plt.gca().add_patch(obs)
-        agent = plt.Circle((self.agent_pose[0], self.agent_pose[1]), 1.0, color='g')
-        plt.text(self.agent_pose[0], self.agent_pose[1]+30, 'Vel = %s'%(round(self.agent_vel[0],2)), fontsize=10)
+        agent = plt.Circle((self.agent_pose[0], self.agent_pose[1]), 1.0, color='b')
+        plt.text(self.agent_pose[0], self.agent_pose[1], '%s'%(round(self.agent_vel[0],2)), fontsize=10)
         plt.gca().add_patch(agent)
 
 
@@ -1363,15 +1283,15 @@ class Environment(Node):
         plt.plot([-204, -204], [240, 3000], color='black', linewidth=1.0)
         plt.plot([-200, -200], [240, 3000], color='black', linewidth=2.0)
 
-        #plt.plot([-232, -232], [-16, -600], color='black', linewidth=2.0)
-        #plt.plot([-228, -228], [-16, -600], color='black', linewidth=1.0)
-        plt.plot([-224, -224], [-8, -600], color='black', linewidth=2.0)
-        plt.plot([-220, -220], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([-216, -216], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([-212, -212], [-8, -600], color='black', linewidth=2.0)
-        plt.plot([-208, -208], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([-204, -204], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([-200, -200], [-8, -600], color='black', linewidth=2.0)
+        #plt.plot([-232, -232], [-16, -750], color='black', linewidth=2.0)
+        #plt.plot([-228, -228], [-16, -750], color='black', linewidth=1.0)
+        plt.plot([-224, -224], [-8, -750], color='black', linewidth=2.0)
+        plt.plot([-220, -220], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([-216, -216], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([-212, -212], [-8, -750], color='black', linewidth=2.0)
+        plt.plot([-208, -208], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([-204, -204], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([-200, -200], [-8, -750], color='black', linewidth=2.0)
 
         #plt.plot([232, 232], [248, 3000], color='black', linewidth=2.0)
         #plt.plot([228, 228], [248, 3000], color='black', linewidth=1.0)
@@ -1383,15 +1303,15 @@ class Environment(Node):
         plt.plot([204, 204], [240, 3000], color='black', linewidth=1.0)
         plt.plot([200, 200], [240, 3000], color='black', linewidth=2.0)
 
-        #plt.plot([232, 232], [-16, -600], color='black', linewidth=2.0)
-        #plt.plot([228, 228], [-16, -600], color='black', linewidth=1.0)
-        plt.plot([224, 224], [-8, -600], color='black', linewidth=2.0)
-        plt.plot([220, 220], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([216, 216], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([212, 212], [-8, -600], color='black', linewidth=2.0)
-        plt.plot([208, 208], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([204, 204], [-8, -600], color='black', linewidth=1.0)
-        plt.plot([200, 200], [-8, -600], color='black', linewidth=2.0)
+        #plt.plot([232, 232], [-16, -750], color='black', linewidth=2.0)
+        #plt.plot([228, 228], [-16, -750], color='black', linewidth=1.0)
+        plt.plot([224, 224], [-8, -750], color='black', linewidth=2.0)
+        plt.plot([220, 220], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([216, 216], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([212, 212], [-8, -750], color='black', linewidth=2.0)
+        plt.plot([208, 208], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([204, 204], [-8, -750], color='black', linewidth=1.0)
+        plt.plot([200, 200], [-8, -750], color='black', linewidth=2.0)
 
         ########################################################################################
 
@@ -1436,33 +1356,29 @@ class Environment(Node):
         
 
     
-    def plot(self, twist, path):
-        plt.ion()
-        plt.show()
-        plt.clf()
-        self.path_x = []
-        self.path_y = []
-        for i in path.poses:
-            self.path_x.append(i.position.x)
-            self.path_y.append(i.position.y)
-        plt.plot(self.path_x, self.path_y, 'y')
-        self.update_agent(twist)
-        self.update_obstacles()
-        self.plot_lanes()
-        self.plot_obstacles()
-        obs = plt.Circle((self.goal_p.position.x, self.goal_p.position.y), 1.0, color='b')
-        plt.gca().add_patch(obs)
-        #plt.ylim(self.agent_pose[1]-50, self.agent_pose[1]+50)
-        #plt.xlim(self.agent_pose[0]-50, self.agent_pose[0]+150)
-        plt.ylim(-30+self.agent_pose[1], 30+self.agent_pose[1])
-        plt.xlim(-30+self.agent_pose[0], 100+self.agent_pose[0])
-        #plt.ylim(-50, 250)
-        #plt.xlim(-350, 350)
-        plt.draw()
-        plt.pause(0.0001)
-        if self.agent_pose[1]>100.0:
-            quit()
-        #plt.pause(100)
+    def plot(self):
+        while rclpy.ok():
+            print("Plotting")
+            plt.ion()
+            plt.show()
+            plt.clf()
+            self.path_x = []
+            self.path_y = []
+            if len(self.local_path.poses)>0:
+                for i in self.local_path.poses:
+                    self.path_x.append(i.position.x)
+                    self.path_y.append(i.position.y)
+            plt.plot(self.path_x, self.path_y, 'y')
+            self.update_agent()
+            self.update_obstacles()
+            self.plot_lanes()
+            self.plot_obstacles()
+            #plt.ylim(self.agent_pose[1]-50, self.agent_pose[1]+50)
+            #plt.xlim(self.agent_pose[0]-50, self.agent_pose[0]+150)
+            plt.ylim(-30+self.agent_pose[1], 30+self.agent_pose[1])
+            plt.xlim(-30+self.agent_pose[0], 100+self.agent_pose[0])
+            plt.draw()
+            plt.pause(0.0001)
         
 
 def main(args=None):
@@ -1472,7 +1388,8 @@ def main(args=None):
 
     #rclpy.spin(minimal_subscriber)
 
-
+    thread_sim = threading.Thread(target=minimal_subscriber.plot)
+    thread_sim.start()
     while rclpy.ok():
         minimal_subscriber.send_request()
         while rclpy.ok():
@@ -1486,7 +1403,9 @@ def main(args=None):
                 else:
                     minimal_subscriber.get_logger().info(
                         'Got res')
-                    minimal_subscriber.plot(response.twist, response.path)
+                    #minimal_subscriber.plot(response.twist, response.path)
+                    minimal_subscriber.local_path = response.path
+                    minimal_subscriber.v_controls = [response.twist.linear.x, response.twist.angular.z]
                 break
         #if np.linalg.norm(minimal_subscriber.agent_p - minimal_subscriber.goal) <= 1.0:
             #break
