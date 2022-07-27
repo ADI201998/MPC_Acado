@@ -203,7 +203,7 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
 	acadoVariables.WN[(NYN+1)*2] = 0*5*1e5;*/
 
     
-    //Combined
+    /*//Combined
     for (int i = 0; i < N; i++)
     {
         acadoVariables.W[NY*NY*i + (NY+1)*0] = 0.0;     //x
@@ -214,16 +214,42 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
         acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
         acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e5;        //j
         //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
-        acadoVariables.W[NY*NY*i + (NY+1)*5] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*6] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*7] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*8] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*9] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*10] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*11] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*12] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*13] = 9*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*14] = 9*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*5] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*6] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*7] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*8] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*9] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*10] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*11] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*12] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*13] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*14] = 1*1e4;
+        acadoVariables.W[NY*NY*i + (NY+1)*15] = 1.0;
+        acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
+    }*/
+
+    
+    //Behaviour Tests
+    for (int i = 0; i < N; i++)
+    {
+        acadoVariables.W[NY*NY*i + (NY+1)*0] = 0.0;     //x
+        acadoVariables.W[NY*NY*i + (NY+1)*1] = 0.0;     //y
+        acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
+        //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
+        //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
+        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
+        acadoVariables.W[NY*NY*i + (NY+1)*4] = 7*1e3;        //j
+        //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
+        acadoVariables.W[NY*NY*i + (NY+1)*5] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*6] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*7] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*8] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*9] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*10] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*11] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*12] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*13] = 8*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*14] = 8*1e3;
         acadoVariables.W[NY*NY*i + (NY+1)*15] = 1.0;
         acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
     }
@@ -231,6 +257,7 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
     acadoVariables.WN[(NYN+1)*0] = 2.5*1e3;
 	acadoVariables.WN[(NYN+1)*1] = 2.5*1e3;
 	acadoVariables.WN[(NYN+1)*2] = 5*1e5;
+
 
     /*for (int i = 0; i < N; i++)
     {
@@ -317,7 +344,7 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
     acadoVariables.x0[ 3 ] = 0.0; // lienar v
     acadoVariables.x0[ 4 ] = 0.0; // ang v
 
-    outdata.open("curved-ideal.txt");
+    outdata.open("crossing-10m.txt");
 
     RCLCPP_INFO(this->get_logger(), "Initialized");
     //acado_preparationStep();
@@ -355,6 +382,9 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetControls::R
     acadoVariables.yN[ 0 ] = request->goal.position.x; // xg
     acadoVariables.yN[ 1 ] = request->goal.position.y;;	// yg	
     acadoVariables.yN[ 2 ] = request->goal.orientation.z;	// yg	
+
+    acadoVariables.WN[(NYN+1)*0] = lane_cons.poses[5].position.x;
+	acadoVariables.WN[(NYN+1)*1] = lane_cons.poses[5].position.y;
 
     for (int i = 0; i < (N + 1); ++i)
     {
@@ -411,6 +441,14 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetControls::R
         double theta9 = obstacles.odom[9].pose.pose.orientation.z + obstacles.odom[9].twist.twist.angular.z*0.1*i;
         acadoVariables.od[i * NOD + 18] = obstacles.odom[9].pose.pose.position.x + obstacles.odom[9].twist.twist.linear.x*cos(theta9)*0.1*i;
         acadoVariables.od[i * NOD + 19] = obstacles.odom[9].pose.pose.position.y + obstacles.odom[9].twist.twist.linear.x*sin(theta9)*0.1*i;
+
+        if(i<N)
+        {
+            acadoVariables.lbValues[i*2+1] = lane_cons.poses[4].position.x;
+            acadoVariables.ubValues[i*2+1] = lane_cons.poses[4].position.y;
+            acadoVariables.W[NY*NY*i + (NY+1)*3] = lane_cons.poses[6].position.x;        //a
+            //acadoVariables.W[NY*NY*i + (NY+1)*4] = 7*1e3;        //j
+        }
 
         /*double theta10 = obstacles.odom[10].pose.pose.orientation.z + obstacles.odom[10].twist.twist.angular.z*0.1*i;
         acadoVariables.od[i * NOD + 20] = obstacles.odom[10].pose.pose.position.x + obstacles.odom[10].twist.twist.linear.x*cos(theta10)*0.1*i;
@@ -518,14 +556,14 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetControls::R
     geometry_msgs::msg::Twist cmd_vel;
     cmd_vel.linear.x = acadoVariables.x[NX + 3];
     cmd_vel.angular.z = acadoVariables.x[NX + 4];
-        outdata << acadoVariables.x[NX + 0] << " " << acadoVariables.x[NX + 1] << " " << acadoVariables.x[NX + 2] << " " << acadoVariables.x[NX + 3] << " " << acadoVariables.x[NX + 4] << " " << acadoVariables.u[NU + 0] << " " << acadoVariables.u[NU + 1]<< " " << te << " " << mpc_iter <<" " <<obstacles.odom[0].pose.pose.position.x << " " <<obstacles.odom[0].pose.pose.position.y << " " <<obstacles.odom[1].pose.pose.position.x << " " <<obstacles.odom[1].pose.pose.position.y <<" " <<obstacles.odom[2].pose.pose.position.x << " " <<obstacles.odom[2].pose.pose.position.y <<" " <<obstacles.odom[3].pose.pose.position.x <<" " << obstacles.odom[3].pose.pose.position.y <<" " <<obstacles.odom[4].pose.pose.position.x << " " <<obstacles.odom[4].pose.pose.position.y <<" " <<obstacles.odom[5].pose.pose.position.x <<" " << obstacles.odom[5].pose.pose.position.y <<" " <<obstacles.odom[6].pose.pose.position.x << " " <<obstacles.odom[6].pose.pose.position.y <<" " <<obstacles.odom[7].pose.pose.position.x << " " <<obstacles.odom[7].pose.pose.position.y <<" " <<obstacles.odom[8].pose.pose.position.x << " " <<obstacles.odom[8].pose.pose.position.y <<" " <<obstacles.odom[9].pose.pose.position.x <<" " << obstacles.odom[9].pose.pose.position.y <<std::endl;
+        outdata << acadoVariables.x[NX + 0] << " " << acadoVariables.x[NX + 1] << " " << acadoVariables.x[NX + 2] << " " << acadoVariables.x[NX + 3] << " " << acadoVariables.x[NX + 4] << " " << acadoVariables.u[NU + 0] << " " << acadoVariables.u[NU + 1]<< " " << te << " " << mpc_iter <<" " <<obstacles.odom[0].pose.pose.position.x << " " <<obstacles.odom[0].pose.pose.position.y << " " <<obstacles.odom[1].pose.pose.position.x << " " <<obstacles.odom[1].pose.pose.position.y <<" " <<obstacles.odom[2].pose.pose.position.x << " " <<obstacles.odom[2].pose.pose.position.y <<" " <<obstacles.odom[3].pose.pose.position.x <<" " << obstacles.odom[3].pose.pose.position.y <<" " <<obstacles.odom[4].pose.pose.position.x << " " <<obstacles.odom[4].pose.pose.position.y <<" " <<obstacles.odom[5].pose.pose.position.x <<" " << obstacles.odom[5].pose.pose.position.y <<" " <<obstacles.odom[6].pose.pose.position.x << " " <<obstacles.odom[6].pose.pose.position.y <<" " <<obstacles.odom[7].pose.pose.position.x << " " <<obstacles.odom[7].pose.pose.position.y <<" " <<obstacles.odom[8].pose.pose.position.x << " " <<obstacles.odom[8].pose.pose.position.y <<" " <<obstacles.odom[9].pose.pose.position.x <<" " << obstacles.odom[9].pose.pose.position.y <<" "<<lane_cons.poses[7].position.x<<std::endl;
     /*acadoVariables.x0[ 0 ] = acadoVariables.x[NX + 0]; // x*/
     acadoVariables.x0[ 1 ] = acadoVariables.x[NX + 1]; // y
     acadoVariables.x0[ 2 ] = acadoVariables.x[NX + 2]; // theta
     acadoVariables.x0[ 3 ] = acadoVariables.x[NX + 3]; // lienar v
     acadoVariables.x0[ 4 ] = acadoVariables.x[NX + 4]; // ang v*/
     double dist = sqrt(pow(acadoVariables.x0[ 0 ]-acadoVariables.y[ 0 ], 2) + pow(acadoVariables.x0[ 1 ]-acadoVariables.y[ 1 ], 2));
-    check_term_dist(dist);
+    //check_term_dist(dist);
 
 
     RCLCPP_INFO(this->get_logger(), "X: %.2f, Y: %.2f, Iter: %.5f", path_val.poses[0].position.x, path_val.poses[0].position.y, mpc_iter);

@@ -28,19 +28,19 @@ extern "C"
 #include "INCLUDE/EXTRAS/SolutionAnalysis.hpp"
 #endif /* ACADO_COMPUTE_COVARIANCE_MATRIX */
 
-static int acado_nWSR;
+static __thread int acado_nWSR;
 
 
 
 #if ACADO_COMPUTE_COVARIANCE_MATRIX == 1
-static SolutionAnalysis acado_sa;
+static __thread SolutionAnalysis acado_sa;
 #endif /* ACADO_COMPUTE_COVARIANCE_MATRIX */
 
 int acado_solve( void )
 {
 	acado_nWSR = QPOASES_NWSRMAX;
 
-	QProblem qp(60, 120);
+	QProblem qp(100, 200);
 	
 	returnValue retVal = qp.init(acadoWorkspace.H, acadoWorkspace.g, acadoWorkspace.A, acadoWorkspace.lb, acadoWorkspace.ub, acadoWorkspace.lbA, acadoWorkspace.ubA, acado_nWSR, acadoWorkspace.y);
 

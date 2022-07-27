@@ -867,7 +867,7 @@ returnValue QProblemB::solveInitialQP(	const real_t* const xOpt, const real_t* c
 
 	/* 3) Obtain linear independent working set for auxiliary QP. */
 
-	static Bounds auxiliaryBounds;
+	static __thread Bounds auxiliaryBounds;
 
 	auxiliaryBounds.init( nV );
 

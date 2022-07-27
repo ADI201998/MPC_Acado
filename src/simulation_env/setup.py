@@ -23,6 +23,8 @@ setup(
             'combined_sim = simulation_env.combined_sim:main',
             'circle_sim = simulation_env.circle_env:main',
             'combined_sim_async = simulation_env.combined_sim_async:main',
+            'behaviour_sim = simulation_env.behaviour_planning_tests:main',
+            'behaviour_sim_2 = simulation_env.behaviour_planning_tests2:main',
         ],
     },
 )
