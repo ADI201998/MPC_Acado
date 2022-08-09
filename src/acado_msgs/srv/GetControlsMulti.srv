@@ -1,0 +1,10 @@
+nav_msgs/Odometry start
+geometry_msgs/PoseArray goal
+acado_msgs/OdomArray obstacles
+geometry_msgs/PoseArray lane_cons
+---
+geometry_msgs/Twist twist
+geometry_msgs/PoseArray path
+float64[] kkt
+bool success
+int64 index

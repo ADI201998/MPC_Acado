@@ -25,6 +25,8 @@ setup(
             'combined_sim_async = simulation_env.combined_sim_async:main',
             'behaviour_sim = simulation_env.behaviour_planning_tests:main',
             'behaviour_sim_2 = simulation_env.behaviour_planning_tests2:main',
+            'behaviour_sim_multi = simulation_env.behaviour_planning_multi:main',
+            'ngsim_test = simulation_env.ngsim_test:main',
         ],
     },
 )

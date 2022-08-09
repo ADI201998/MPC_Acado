@@ -34,8 +34,10 @@ using std::placeholders::_4;
 
 #define NUM_STEPS   10        /* Number of real-time iterations. */
 #define VERBOSE     1         /* Show iterations: 1, silent: 0.  */
-ACADOvariables acadoVariables;
-ACADOworkspace acadoWorkspace;
+extern "C"{
+__thread ACADOvariables acadoVariables;
+__thread ACADOworkspace acadoWorkspace;
+}
 
 class GoalReach : public rclcpp::Node
 {

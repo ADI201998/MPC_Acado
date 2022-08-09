@@ -27,8 +27,10 @@ using std::placeholders::_1;
 
 #define NUM_STEPS   1        /* Number of real-time iterations. */
 #define VERBOSE     1         /* Show iterations: 1, silent: 0.  */
-ACADOvariables acadoVariables;
-ACADOworkspace acadoWorkspace;
+extern "C"{
+__thread ACADOvariables acadoVariables;
+__thread ACADOworkspace acadoWorkspace;
+}
 
 class SimpleMPC : public rclcpp::Node
 {

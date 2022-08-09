@@ -82,53 +82,61 @@ ament_package()
 #target_link_libraries( simple_mpc ${ACADO_ENV_LIBRARIES_DIRS})
 #ament_target_dependencies(simple_mpc rclcpp std_msgs nav_msgs ${ACADO_ENV_LIBRARIES_DIRS})
 
-add_executable(simple_mpc src/simple_mpc.cpp)
-target_link_libraries(simple_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(simple_mpc rclcpp std_msgs nav_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(simple_mpc src/simple_mpc.cpp)
+#target_link_libraries(simple_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(simple_mpc rclcpp std_msgs nav_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(goal_reach src/goal_reach_test.cpp)
-target_link_libraries(goal_reach  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(goal_reach rclcpp std_msgs nav_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(goal_reach src/goal_reach_test.cpp)
+#target_link_libraries(goal_reach  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(goal_reach rclcpp std_msgs nav_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(goal_reach_srv src/goal_reach_srv.cpp)
-target_link_libraries(goal_reach_srv  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(goal_reach_srv rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(goal_reach_srv src/goal_reach_srv.cpp)
+#target_link_libraries(goal_reach_srv  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(goal_reach_srv rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(var_speed src/var_speed_srv.cpp)
-target_link_libraries(var_speed  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(var_speed rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(var_speed src/var_speed_srv.cpp)
+#target_link_libraries(var_speed  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(var_speed rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(circle_lane src/circle_lane_srv.cpp)
-target_link_libraries(circle_lane  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(circle_lane rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(circle_lane src/circle_lane_srv.cpp)
+#target_link_libraries(circle_lane  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(circle_lane rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(goal_reach_carla src/goal_reach_carla.cpp)
-target_link_libraries(goal_reach_carla  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(goal_reach_carla rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(goal_reach_carla src/goal_reach_carla.cpp)
+#target_link_libraries(goal_reach_carla  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(goal_reach_carla rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(goal_reach_intersection src/goal_reach_intersection.cpp)
-target_link_libraries(goal_reach_intersection  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(goal_reach_intersection rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(goal_reach_intersection src/goal_reach_intersection.cpp)
+#target_link_libraries(goal_reach_intersection  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(goal_reach_intersection rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(intersection_wide_lane src/intersection_wide_lane.cpp)
-target_link_libraries(intersection_wide_lane  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(intersection_wide_lane rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(intersection_wide_lane src/intersection_wide_lane.cpp)
+#target_link_libraries(intersection_wide_lane  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(intersection_wide_lane rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(goal_reach_idm src/goal_reach_idm.cpp)
-target_link_libraries(goal_reach_idm  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(goal_reach_idm rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(goal_reach_idm src/goal_reach_idm.cpp)
+#target_link_libraries(goal_reach_idm  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(goal_reach_idm rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(multi_circle src/multi_circle_acado.cpp)
-target_link_libraries(multi_circle  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(multi_circle rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(multi_circle src/multi_circle_acado.cpp)
+#target_link_libraries(multi_circle  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(multi_circle rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
-add_executable(multi_circle_curve src/multi_circle_curve.cpp)
-target_link_libraries(multi_circle_curve  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
-ament_target_dependencies(multi_circle_curve rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+#add_executable(multi_circle_curve src/multi_circle_curve.cpp)
+#target_link_libraries(multi_circle_curve  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+#ament_target_dependencies(multi_circle_curve rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
 add_executable(combined_mpc src/combined_mpc.cpp)
 target_link_libraries(combined_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(combined_mpc rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
+add_executable(combined_mpc_multi src/combined_mpc_multi.cpp)
+target_link_libraries(combined_mpc_multi eigen-quadprog ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(combined_mpc_multi rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
+add_executable(combined_mpc_multi_thread src/combined_mpc_multi_thread.cpp)
+target_link_libraries(combined_mpc_multi_thread eigen-quadprog ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(combined_mpc_multi_thread rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
 add_executable(combined_mpc_cons src/combined_mpc_cons.cpp)
 target_link_libraries(combined_mpc_cons  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
@@ -136,17 +144,19 @@ ament_target_dependencies(combined_mpc_cons rclcpp std_msgs nav_msgs acado_msgs 
 
 
 install(TARGETS
-  simple_mpc
-  goal_reach
-  goal_reach_srv
-  var_speed
-  circle_lane
-  goal_reach_carla
-  goal_reach_intersection
-  intersection_wide_lane
-  goal_reach_idm
-  multi_circle
-  multi_circle_curve
+  #simple_mpc
+  #goal_reach
+  #goal_reach_srv
+  #var_speed
+  #circle_lane
+  #goal_reach_carla
+  #goal_reach_intersection
+  #intersection_wide_lane
+  #goal_reach_idm
+  #multi_circle
+  #multi_circle_curve
   combined_mpc
   combined_mpc_cons
+  combined_mpc_multi
+  combined_mpc_multi_thread
   DESTINATION lib/${PROJECT_NAME})

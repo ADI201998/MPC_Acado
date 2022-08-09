@@ -1,6 +1,11 @@
-build
+crossing-10m.txt
+curved-ideal.txt
+get_data2.py
+plot.py
+plot_obs.pybuild
 log
 install
+build
 .vscode
 CAIR-data
 data_old

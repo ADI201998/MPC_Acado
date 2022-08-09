@@ -16,12 +16,13 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose, PoseArray
 from acado_msgs.srv import GetVelocityCmd
 from acado_msgs.srv import GetControls
+from acado_msgs.srv import GetControlsMulti
 from acado_msgs.msg import OdomArray
 
 class Behaviour(Node):
 	def __init__(self):
 		super().__init__('behaviour_tests')
-		self.cli = self.create_client(GetControls, "/get_vel")
+		self.cli = self.create_client(GetControlsMulti, "/get_vel")
 		while not self.cli.wait_for_service(timeout_sec=1.0):
 			self.get_logger().info('service not available, waiting again...')
 			
@@ -77,7 +78,7 @@ class Behaviour(Node):
 		mng = plt.get_current_fig_manager()
 		# mng.full_screen_toggle()
 		self.fig.set_size_inches(20, 10)
-		self.req = GetControls.Request()
+		self.req = GetControlsMulti.Request()
 		print("STARTING SIMULATION")
 
 	def send_request(self):
@@ -119,7 +120,7 @@ class Behaviour(Node):
 			obstacles.odom.append(odom)
 		self.req.obstacles = obstacles
 
-		goal = Pose()
+		goal = PoseArray()
 		lane_cons = PoseArray()
 		if self.behaviour_event == 'x' or self.behaviour_event == 'z' or int(self.behaviour_event) == 2:
 			lane_cons, goal = self.get_lane_cons_follow()
@@ -151,21 +152,32 @@ class Behaviour(Node):
 		#lane_cons, goal = self.br_cons(0.0)
 		self.req.goal = goal
 		self.req.lane_cons = lane_cons
-		print("Goal = ", goal)
+		#print("Goal = ", goal)
 		#print(self.obs[:,0])
 		#print("Lane Cons == ", self.req.lane_cons)
 		self.goal_p = goal
 		self.future = self.cli.call_async(self.req)
 
 	def get_lane_cons_overtake(self):
+		print("overtake")
 		lane_info = PoseArray()
-		goal_pose = Pose()
-		#lanes = [-2.0, 2.0]
-		lanes = [-2.0]
+		goals = PoseArray()
+		lanes = [-2.0, 2.0]
+		#lanes = [-2.0]
 		g_dist = 50.0
+		goal_pose = Pose()
 		goal_pose.position.x = self.agent_pose[0] + self.dist_goal
-		goal_pose.position.y = random.choice(lanes)
+		goal_pose.position.y = lanes[0]#random.choice(lanes)
 		goal_pose.orientation.z = 0.0
+		goals.poses.append(goal_pose)
+		#print(goals)
+		goal_pose = Pose()
+		goal_pose.position.x = self.agent_pose[0] + self.dist_goal
+		goal_pose.position.y = lanes[1]#random.choice(lanes)
+		goal_pose.orientation.z = 0.0
+		goals.poses.append(goal_pose)
+		#print(goals)
+
 		info = Pose()
 		info.position.x = 0.0
 		info.position.y = 0.0
@@ -214,8 +226,7 @@ class Behaviour(Node):
 		info = Pose()   #behaviour id
 		info.position.x = 1.0
 		lane_info.poses.append(info)
-
-		return lane_info, goal_pose
+		return lane_info, goals
 	
 	def get_lane_cons_follow(self):
 		lane_info = PoseArray()
@@ -228,7 +239,7 @@ class Behaviour(Node):
 		#sorted_obs = sorted_y_obs[:5,:]
 		sorted_obs = self.obs[np.abs(self.obs[:5,0] - self.agent_pose[0]).argsort()]
 		self.obs[:5,:] = sorted_obs
-		print(self.obs.shape)
+		#print(self.obs.shape)
 		
 		if self.behaviour_event == 'x':
 			self.obs[0][3] = self.obs[0][3] - 3*self.dt
@@ -238,7 +249,7 @@ class Behaviour(Node):
 			self.behaviour_event = 2
 		#if self.obs[0][3]>5.0:
 		goal_pose.position.x = self.obs[0][0] + self.obs[0][3]*10
-		print(self.obs[0][3])
+		#print(self.obs[0][3])
 		#else:
 		#	goal_pose.position.x = self.obs[0][0] - 5.0
 		#goal_pose.position.x = self.obs[0][0] + 30.0
@@ -511,7 +522,7 @@ class Behaviour(Node):
 		self.behaviour_event = event.key
 
 	
-	def plot(self, twist, path):
+	def plot(self, twist, path, kkt):
 		plt.ion()
 		plt.show()
 		plt.clf()
@@ -519,19 +530,55 @@ class Behaviour(Node):
 		self.ax2 = self.fig.add_subplot(212, aspect='equal')
 		self.path_x = []
 		self.path_y = []
+		self.path_theta = []
+		self.path_v = []
+		self.path_w = []
 		for i in path.poses:
 			self.path_x.append(i.position.x)
 			self.path_y.append(i.position.y)
-		print(len(self.path_x))
+			self.path_theta.append(i.position.z)
+			self.path_v.append(i.orientation.x)
+			self.path_w.append(i.orientation.y)
+		self.path_x = np.array(self.path_x)
+		self.path_y = np.array(self.path_y)
+		self.path_theta = np.array(self.path_theta)
+		self.path_v = np.array(self.path_v)
+		self.path_w = np.array(self.path_w)
+
+		## Get Ranks
+		y_dist = []
+		kkt_cost = []
+		cruise_speed = []
+		for i in range(2):
+			y_dist.append(np.linalg.norm(self.path_y[i*51:i*51 + 51] - 0))
+			kkt_cost.append(np.linalg.norm(kkt[i]))
+		y_idx = np.array(y_dist).argsort()
+		kkt_idx = np.array(kkt_cost).argsort()
+		index = np.inf
+		min_cost = np.inf
+		for i in range(2):
+			cost = 10*y_idx[i] + 50*kkt_idx[i]
+			if cost<min_cost:
+				min_cost = cost
+				index = i
+
 		self.fig.canvas.mpl_connect('key_press_event', self.on_press)
-		self.ax1.plot(self.path_x, self.path_y, 'y')
+		#print(len(self.path_x))
+		for i in range(2):
+			if i == index:
+				self.ax1.plot(self.path_x[i*51:i*51 + 51], self.path_y[i*51:i*51 + 51], 'y')
+			else:
+				self.ax1.plot(self.path_x[i*51:i*51 + 51], self.path_y[i*51:i*51 + 51], 'pink')
+		
 		self.update_agent(twist)
 		self.update_obstacles()
 		self.plot_lanes()
 		self.plot_obstacles()
 		#obs = plt.Circle((self.goal_p.position.x, self.goal_p.position.y), 1.0, color='b')
 		#self.ax1.add_patch(obs)
-		self.ax1.plot(self.goal_p.position.x, self.goal_p.position.y, 'xb')
+		print(self.goal_p.poses[0].position.y, self.goal_p.poses[1].position.y)
+		self.ax1.plot(self.goal_p.poses[0].position.x, self.goal_p.poses[0].position.y, 'xb')
+		self.ax1.plot(self.goal_p.poses[1].position.x, self.goal_p.poses[1].position.y, 'xb')
 		#self.ax1.ylim(self.agent_pose[1]-50, self.agent_pose[1]+50)
 		#self.ax1.xlim(self.agent_pose[0]-50, self.agent_pose[0]+150)
 		self.ax1.set_ylim(-30, 30)
@@ -575,7 +622,7 @@ def main(args=None):
 				else:
 					minimal_subscriber.get_logger().info(
 						'Got res')
-					minimal_subscriber.plot(response.twist, response.path)
+					minimal_subscriber.plot(response.twist, response.path, response.kkt)
 				break
 		#if np.linalg.norm(minimal_subscriber.agent_p - minimal_subscriber.goal) <= 1.0:
 			#break

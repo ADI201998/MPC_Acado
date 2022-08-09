@@ -39,6 +39,10 @@ using std::placeholders::_4;
 
 #define NUM_STEPS   10        /* Number of real-time iterations. */
 #define VERBOSE     1         /* Show iterations: 1, silent: 0.  */
+/*extern "C"{
+__thread ACADOvariables acadoVariables;
+__thread ACADOworkspace acadoWorkspace;
+}*/
 ACADOvariables acadoVariables;
 ACADOworkspace acadoWorkspace;
 
@@ -201,16 +205,16 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
         acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
         //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
         //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
-        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e2;        //a
-        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e2;        //j
+        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
+        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e5;        //j
         //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
         acadoVariables.W[NY*NY*i + (NY+1)*5] = 1.0;
         acadoVariables.W[NY*NY*i + (NY+1)*6] = 0.0;
     }
 
-    acadoVariables.WN[(NYN+1)*0] = 2.5*1e1;
-	acadoVariables.WN[(NYN+1)*1] = 2.5*1e1;
-	acadoVariables.WN[(NYN+1)*2] = 5*1e1;
+    acadoVariables.WN[(NYN+1)*0] = 2.5*1e3;
+	acadoVariables.WN[(NYN+1)*1] = 2.5*1e3;
+	acadoVariables.WN[(NYN+1)*2] = 5*1e5;
 
     /*for (int i = 0; i < N; i++)
     {
@@ -258,16 +262,16 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
     {
         acadoVariables.lbAValues[i*12+N*2+0] = 0.0;
         acadoVariables.lbAValues[i*12+N*2+1] = -1e12;
-        acadoVariables.lbAValues[i*12+N*2+2] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+3] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+4] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+5] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+6] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+7] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+8] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+9] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+10] = 2.2;
-        acadoVariables.lbAValues[i*12+N*2+11] = 2.2;
+        acadoVariables.lbAValues[i*12+N*2+2] = 1;
+        acadoVariables.lbAValues[i*12+N*2+3] = 1;
+        acadoVariables.lbAValues[i*12+N*2+4] = 1;
+        acadoVariables.lbAValues[i*12+N*2+5] = 1;
+        acadoVariables.lbAValues[i*12+N*2+6] = 1;
+        acadoVariables.lbAValues[i*12+N*2+7] = 1;
+        acadoVariables.lbAValues[i*12+N*2+8] = 1;
+        acadoVariables.lbAValues[i*12+N*2+9] = 1;
+        acadoVariables.lbAValues[i*12+N*2+10] = 1;
+        acadoVariables.lbAValues[i*12+N*2+11] = 1;
 
         acadoVariables.ubAValues[i*12+N*2+0] = 1e12;
         acadoVariables.ubAValues[i*12+N*2+1] = 0.0;
@@ -356,6 +360,9 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetControls::R
     acadoVariables.yN[ 1 ] = request->goal.position.y;;	// yg	
     acadoVariables.yN[ 2 ] = request->goal.orientation.z;	// yg	
 
+    acadoVariables.WN[(NYN+1)*0] = lane_cons.poses[5].position.x;
+	acadoVariables.WN[(NYN+1)*1] = lane_cons.poses[5].position.y;
+
     for (int i = 0; i < (N + 1); ++i)
     {
         /*acadoVariables.od[i * NOD + 0] = pa.poses[0].position.x;
@@ -411,6 +418,14 @@ void GoalReach::get_vel_cb(const std::shared_ptr<acado_msgs::srv::GetControls::R
         double theta9 = obstacles.odom[9].pose.pose.orientation.z + obstacles.odom[9].twist.twist.angular.z*0.1*i;
         acadoVariables.od[i * NOD + 18] = obstacles.odom[9].pose.pose.position.x + obstacles.odom[9].twist.twist.linear.x*cos(theta9)*0.1*i;
         acadoVariables.od[i * NOD + 19] = obstacles.odom[9].pose.pose.position.y + obstacles.odom[9].twist.twist.linear.x*sin(theta9)*0.1*i;
+
+        if(i<N)
+        {
+            acadoVariables.lbValues[i*2+1] = lane_cons.poses[4].position.x;
+            acadoVariables.ubValues[i*2+1] = lane_cons.poses[4].position.y;
+            acadoVariables.W[NY*NY*i + (NY+1)*3] = lane_cons.poses[6].position.x;        //a
+            //acadoVariables.W[NY*NY*i + (NY+1)*4] = 7*1e3;        //j
+        }
 
         /*double theta10 = obstacles.odom[10].pose.pose.orientation.z + obstacles.odom[10].twist.twist.angular.z*0.1*i;
         acadoVariables.od[i * NOD + 20] = obstacles.odom[10].pose.pose.position.x + obstacles.odom[10].twist.twist.linear.x*cos(theta10)*0.1*i;
