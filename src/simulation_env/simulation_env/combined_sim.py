@@ -608,7 +608,7 @@ class Environment(Node):
 		return lane_info, goal_pose
 
 	def rn_cons(self, index):
-		print("rn_cons")
+		print("rn_cons = ", index)
 		lane_info = PoseArray()
 		goal_pose = Pose()
 		#lanes = [202.0, 206.0, 210.0]
@@ -851,6 +851,7 @@ class Environment(Node):
 		return lane_info, goal_pose
 
 	def rco_cons(self, index):
+		print("rco = ", index)
 		lane_info = PoseArray()
 		goal_pose = Pose()
 		#lanes = [114.0, 118.0, 122.0]
@@ -912,7 +913,7 @@ class Environment(Node):
 					break
 			lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
 			if self.path_x[-1]>200 and self.current_laneid == self.next_laneid:
-				self.next_laneid = LaneID.RN#random.choice([LaneID.RN, LaneID.RCI])
+				self.next_laneid = LaneID.RCI#random.choice([LaneID.RN, LaneID.RCI])
 			if self.next_laneid == LaneID.RCI:
 				self.current_laneid = self.next_laneid if self.path_x[-1]>=226 else self.current_laneid
 				return lane_cons, goal
@@ -931,7 +932,7 @@ class Environment(Node):
 			lane_cons, goal = self.lane_cons_func[self.current_laneid](index)
 			print(lane_cons, goal)
 			if self.path_x[-1]<-212 and self.current_laneid == self.next_laneid:
-				self.next_laneid = random.choice([LaneID.LN, LaneID.LCO])
+				self.next_laneid = LaneID.LCO#random.choice([LaneID.LN, LaneID.LCO])
 			if self.next_laneid == LaneID.LCO:
 				self.current_laneid = self.next_laneid if self.path_x[-1]<=-226 else self.current_laneid
 				return lane_cons, goal
@@ -1040,7 +1041,7 @@ class Environment(Node):
 		elif self.current_laneid == LaneID.RN:
 			print("RN Cons")
 			for i in range(len(self.path_x)):
-				if self.path_x[i]>200 and self.path_x[i]<=212 and self.path_y[i]>4:
+				if self.path_x[i]>200 and self.path_x[i]<=212 and self.path_y[i]>-8:
 					index = float(i)
 					print("rn index = ", index)
 					break

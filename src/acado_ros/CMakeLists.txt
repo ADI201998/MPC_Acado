@@ -130,6 +130,10 @@ add_executable(combined_mpc src/combined_mpc.cpp)
 target_link_libraries(combined_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(combined_mpc rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
+add_executable(behaviour_mpc src/behaviour_mpc.cpp)
+target_link_libraries(behaviour_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(behaviour_mpc rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
 add_executable(combined_mpc_multi src/combined_mpc_multi.cpp)
 target_link_libraries(combined_mpc_multi eigen-quadprog ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(combined_mpc_multi rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
@@ -141,6 +145,14 @@ ament_target_dependencies(combined_mpc_multi_thread rclcpp std_msgs nav_msgs aca
 add_executable(combined_mpc_cons src/combined_mpc_cons.cpp)
 target_link_libraries(combined_mpc_cons  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(combined_mpc_cons rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
+add_executable(combined_mpc_multi2 src/combined_mpc_multi2.cpp)
+target_link_libraries(combined_mpc_multi2 eigen-quadprog ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(combined_mpc_multi2 rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
+add_executable(combined_mpc_multi3 src/combined_mpc_multi3.cpp)
+target_link_libraries(combined_mpc_multi3 eigen-quadprog ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(combined_mpc_multi3 rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
 
 install(TARGETS
@@ -156,7 +168,10 @@ install(TARGETS
   #multi_circle
   #multi_circle_curve
   combined_mpc
+  behaviour_mpc
   combined_mpc_cons
   combined_mpc_multi
+  combined_mpc_multi2
+  combined_mpc_multi3
   combined_mpc_multi_thread
   DESTINATION lib/${PROJECT_NAME})

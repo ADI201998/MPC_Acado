@@ -31,7 +31,9 @@ class NGSIMTest(Node):
 		self.ngsim_data[:, 8] = np.round(self.ngsim_data[:, 8], 1)
 		self.time_arr = np.round(np.arange(0.0, 874.0, 0.1), 1)
 		self.loop = 0
-		self.time_shift = 100.0
+		#	400:415 = 100
+		#	500:515 = 98
+		self.time_shift = 140#97#200.0
 		self.num_obs = 10
 
 		self.xlim = 0.0
@@ -39,27 +41,31 @@ class NGSIMTest(Node):
 		self.obs_list = []
 
 		self.agent_pose = [0.0, 2.0, 0.0]
+		#self.agent_pose = [0.0, 16.0, 0.0]
+		#self.agent_pose = [0.0, 18.0, 0.0]
 		self.agent_vel = [15.0, 0.0]
 		self.dt = 0.1
 
 		self.lane_y = [2.0, 6.0, 10.0, 14.0, 18.0, 22.0]
 		self.dist_goal = 80.0
 
-		self.fig = plt.figure(0)
-		self.ax1 = self.fig.add_subplot(211, aspect='equal')
+		#self.fig = plt.figure(0)
+		#self.ax1 = self.fig.add_subplot(111, aspect='equal')
 		#self.ax2 = self.fig.add_subplot(212, aspect='equal')
-		mng = plt.get_current_fig_manager()
+		#mng = plt.get_current_fig_manager()
 		# mng.full_screen_toggle()
-		self.fig.set_size_inches(20, 10)
+		#self.fig.set_size_inches(20, 10)
 		self.req = GetControlsMulti.Request()
 		print("STARTING SIMULATION")
 
 	def send_request(self):
 		self.obs_list = []
-		idxs = np.where((self.ngsim_data[:, 8] == (self.time_shift+ self.loop*self.dt)))[0]
-		#print(idxs)
+		cur_time = np.round(self.time_shift+ self.loop*self.dt, 2)
+		idxs = np.where((self.ngsim_data[:, 8] == (cur_time)))[0]
+		print(len(idxs), cur_time)
 		vehicles = self.ngsim_data[idxs]
 		y = vehicles[:, 1]
+		#y = vehicles[:, 1] - 4.0
 		x = vehicles[:, 2]
 		#print(x)
 		self.obs_list.append(x)
@@ -200,23 +206,23 @@ class NGSIMTest(Node):
 	
 	
 	def plot_lanes(self):
-		self.ax1.plot([-20000, 20000], [0, 0], color='black', linewidth=2.0)
-		self.ax1.plot([-20000, 20000], [4, 4], color='black', linewidth=1.0)
-		self.ax1.plot([-20000, 20000], [8, 8], color='black', linewidth=1.0)
-		self.ax1.plot([-20000, 20000], [12, 12], color='black', linewidth=1.0)
-		self.ax1.plot([-20000, 20000], [16, 16], color='black', linewidth=1.0)
-		self.ax1.plot([-20000, 20000], [20, 20], color='black', linewidth=1.0)
-		self.ax1.plot([-20000, 20000], [24, 24], color='black', linewidth=2.0)
+		plt.plot([-20000, 20000], [0, 0], color='black', linewidth=2.0)
+		plt.plot([-20000, 20000], [4, 4], color='black', linewidth=1.0)
+		plt.plot([-20000, 20000], [8, 8], color='black', linewidth=1.0)
+		plt.plot([-20000, 20000], [12, 12], color='black', linewidth=1.0)
+		plt.plot([-20000, 20000], [16, 16], color='black', linewidth=1.0)
+		plt.plot([-20000, 20000], [20, 20], color='black', linewidth=1.0)
+		plt.plot([-20000, 20000], [24, 24], color='black', linewidth=2.0)
 	
 	def plot_obstacles(self):
 		for i in range(len(self.obs_list[0])):
 			obs = plt.Circle((self.obs_list[0][i], self.obs_list[1][i]), 1.0, color='r')
-			self.ax1.add_patch(obs)
+			plt.gca().add_patch(obs)
 		agent = plt.Circle((self.agent_pose[0], self.agent_pose[1]), 1.0, color='g')
-		self.ax1.text(self.xlim, 33, 'Vel = %s'%(round(self.agent_vel[0],2)), fontsize=10)
-		self.ax1.text(self.xlim+40, 33, 'Index = %s'%(self.index), fontsize=10)
+		plt.text(self.xlim, 33, 'Vel = %s'%(round(self.agent_vel[0],2)), fontsize=10)
+		plt.text(self.xlim+40, 33, 'Index = %s'%(self.index), fontsize=10)
 
-		self.ax1.add_patch(agent)
+		plt.gca().add_patch(agent)
 	
 	def on_press(self, event):
 		self.behaviour_event = event.key
@@ -226,7 +232,7 @@ class NGSIMTest(Node):
 		plt.ion()
 		plt.show()
 		plt.clf()
-		self.ax1 = self.fig.add_subplot(211, aspect='equal')
+		#self.ax1 = self.fig.add_subplot(211, aspect='equal')
 		#self.ax2 = self.fig.add_subplot(212, aspect='equal')
 		self.path_x = []
 		self.path_y = []
@@ -249,53 +255,60 @@ class NGSIMTest(Node):
 		y_dist = []
 		kkt_cost = []
 		cruise_speed = []
+		angular_vel = []
 		for i in range(len(self.lane_y)):
-			y_dist.append(np.linalg.norm(self.path_y[i*51:i*51 + 51] - 12))
-			kkt_cost.append(np.linalg.norm(kkt[i]))
-		y_idx = np.array(y_dist).argsort()
-		kkt_idx = np.array(kkt_cost).argsort()
+			y_dist.append(np.linalg.norm(self.path_y[i*51:i*51 + 51] - self.lane_y[i]))
+			kkt_cost.append(kkt[i])
+			cruise_speed.append(np.linalg.norm(self.path_v[i*51:i*51 + 51] - 15.0))
+			angular_vel.append(np.linalg.norm(self.path_w[i*51:i*51 + 51] - 0.0))
+		y_idx = np.array(np.array(y_dist)).argsort()
+		kkt_idx = np.array(np.array(kkt_cost)).argsort()
+		cruise_idx = np.array(np.array(cruise_speed)).argsort()
+		ang_idx = np.array(np.array(angular_vel)).argsort()
 		index = np.inf
 		min_cost = np.inf
 		for i in range(len(self.lane_y)):
-			cost = 50*y_idx[i] + 50*kkt_idx[i]
+			cost = 0*y_idx[i] + 50*kkt_idx[i] + 100*cruise_idx[i] + 0*ang_idx[i]
 			if cost<min_cost:
 				min_cost = cost
 				index = i
 		self.index = index
-		self.fig.canvas.mpl_connect('key_press_event', self.on_press)
+		#self.fig.canvas.mpl_connect('key_press_event', self.on_press)
 		#print(len(self.path_x))
 		for i in range(len(self.lane_y)):
 			if i == index:
-				self.ax1.plot(self.path_x[i*51:i*51 + 51], self.path_y[i*51:i*51 + 51], 'y')
+				plt.plot(self.path_x[i*51:i*51 + 51], self.path_y[i*51:i*51 + 51], 'y')
 			else:
-				self.ax1.plot(self.path_x[i*51:i*51 + 51], self.path_y[i*51:i*51 + 51], 'pink')
+				plt.plot(self.path_x[i*51:i*51 + 51], self.path_y[i*51:i*51 + 51], 'pink')
 		
-		self.update_agent(twist)
+		if self.agent_pose[0]<100:
+			self.update_agent(twist)
 		#self.update_obstacles()
 		self.plot_lanes()
 		self.plot_obstacles()
 		#obs = plt.Circle((self.goal_p.position.x, self.goal_p.position.y), 1.0, color='b')
-		#self.ax1.add_patch(obs)
+		#plt.add_patch(obs)
 		#print(self.goal_p.poses[0].position.y, self.goal_p.poses[1].position.y, len(self.goal_p.poses))
 		for i in range(len(self.lane_y)):
-			self.ax1.plot(self.goal_p.poses[i].position.x, self.goal_p.poses[i].position.y, 'xb')
-		#self.ax1.plot(self.goal_p.poses[1].position.x, self.goal_p.poses[1].position.y, 'xb')
-		#self.ax1.ylim(self.agent_pose[1]-50, self.agent_pose[1]+50)
-		#self.ax1.xlim(self.agent_pose[0]-50, self.agent_pose[0]+150)
-		self.ax1.set_ylim(-10, 30)
+			plt.plot(self.goal_p.poses[i].position.x, self.goal_p.poses[i].position.y, 'xb')
+		#plt.plot(self.goal_p.poses[1].position.x, self.goal_p.poses[1].position.y, 'xb')
+		#plt.ylim(self.agent_pose[1]-50, self.agent_pose[1]+50)
+		#plt.xlim(self.agent_pose[0]-50, self.agent_pose[0]+150)
+		plt.ylim(-10, 30)
 		#self.time_arr.append(self.agent_pose[0])
 		#self.vel.append(self.agent_vel[0])
-		#self.ax1.xlim(-30+self.agent_pose[0], 100+self.agent_pose[0])
+		#plt.xlim(-30+self.agent_pose[0], 100+self.agent_pose[0])
 		if (self.agent_pose[0]-self.xlim)>70.0:
 			self.xlim = self.xlim+100.0
-		self.ax1.set_xlim(-30+self.xlim, 100+self.xlim)
+		plt.xlim(-30+self.xlim, 100+self.xlim)
 		#self.ax2.plot(self.time_arr, self.vel)
 		#self.ax2.set_xlim(-30+self.xlim, 100+self.xlim)
 		#self.ax2.set_ylim(0,22)
-		#self.ax1.ylim(-50, 250)
-		#self.ax1.xlim(-350, 350)
-		#self.ax1.draw()
-		self.loop+=1
+		#plt.ylim(-50, 250)
+		#plt.xlim(-350, 350)
+		#plt.draw()
+		if self.agent_pose[0]<100:
+			self.loop+=1
 		plt.draw()
 		plt.pause(0.0001)
 		#if self.agent_pose[1]>100.0:

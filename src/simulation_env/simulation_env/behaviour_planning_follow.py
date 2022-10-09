@@ -50,16 +50,16 @@ class Behaviour(Node):
 							[-30.0, 2.0, 0.0, 10.0, 0.0]])
 
 		# Use this for follow vehicle only behaviour
-		"""self.obs = np.array([[10.0*1000, -2.0, 0.0, 10.0, 0.0],
+		self.obs = np.array([[10.0*1000, -2.0, 0.0, 10.0, 0.0],
 							[25.0*1000, 2.0, 0.0, 11.0, 0.0],
-							[40.0*1000, -2.0, 0.0, 9.0, 0.0],
+							[40.0, -2.0, 0.0, 9.0, 0.0],
 							[85.0*1000, 2.0, 0.0, 10.5, 0.0],
 							[85.0*1000, -2.0, 0.0, 9.5, 0.0],
 							[135.0*1000, 2.0, 0.0, 10.2, 0.0],
 							[140.0*1000, -2.0, 0.0, 10.8, 0.0],
 							[180.0*1000, 2.0, 0.0, 9.2, 0.0],
 							[185.0*1000, -2.0, 0.0, 9.8, 0.0],
-							[50.0*1000, 2.0, 0.0, 10.0, 0.0]])"""
+							[50.0*1000, 2.0, 0.0, 10.0, 0.0]])
 		self.obs_pedestrian = np.array([[100.0, -6.0, 1.5707963, 0.0, 0.0]])
 
 		self.behaviour_event = 1
@@ -88,7 +88,7 @@ class Behaviour(Node):
 		self.req.start.twist.twist.angular.z = self.agent_vel[1]
 
 		obstacles = OdomArray()
-		"""odom = Odometry()
+		odom = Odometry()
 		odom.pose.pose.position.x = self.obs[0][0]
 		odom.pose.pose.position.y = self.obs[0][1]
 		odom.pose.pose.orientation.z = self.obs[0][2]
@@ -106,8 +106,8 @@ class Behaviour(Node):
 			odom.twist.twist.angular.z = 10000.0#self.obs[i][4]
 			#obs = plt.Circle((sorted_obs[i][0], sorted_obs[i][1]), 1.2, color='g')
 			#self.ax1.add_patch(obs)
-			obstacles.odom.append(odom)"""
-		for i in range(10):
+			obstacles.odom.append(odom)
+		"""for i in range(10):
 			odom = Odometry()
 			odom.pose.pose.position.x = self.obs[i][0]
 			odom.pose.pose.position.y = self.obs[i][1]
@@ -116,7 +116,7 @@ class Behaviour(Node):
 			odom.twist.twist.angular.z = self.obs[i][4]
 			#obs = plt.Circle((sorted_obs[i][0], sorted_obs[i][1]), 1.2, color='g')
 			#self.ax1.add_patch(obs)
-			obstacles.odom.append(odom)
+			obstacles.odom.append(odom)"""
 		self.req.obstacles = obstacles
 
 		goal = Pose()
