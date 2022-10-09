@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include "yaml-cpp/yaml.h"
+
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "geometry_msgs/msg/pose.hpp"
@@ -81,13 +83,31 @@ GoalReach::GoalReach(): Node("acado_circle_lane_srv"), count_(0)
 
     acado_initializeSolver();
 
-    for (i = 0; i < (N + 1); ++i)  
+    YAML::Node map = YAML::LoadFile("src/acado_ros/config.yaml");
+        
+    std::string type = map["type"].as<std::string>();
+
+    if(type == "curved")
     {
-        acadoVariables.x[ NX * i + 0 ] = 0.0; // x
-        acadoVariables.x[ NX * i + 1 ] = 14.0; // y
-        acadoVariables.x[ NX * i + 2 ] = 0.0; // theta
-        acadoVariables.x[ NX * i + 3 ] = 15.0; // v 
-        acadoVariables.x[ NX * i + 4 ] = 0.0; // w
+        for (i = 0; i < (N + 1); ++i)  
+        {
+            acadoVariables.x[ NX * i + 0 ] = 102.0; // x
+            acadoVariables.x[ NX * i + 1 ] = 0.0; // y
+            acadoVariables.x[ NX * i + 2 ] = 1.57; // theta
+            acadoVariables.x[ NX * i + 3 ] = 15.0; // v 
+            acadoVariables.x[ NX * i + 4 ] = 0.0; // w
+        }
+    }
+    else if(type == "combined")
+    {
+       for (i = 0; i < (N + 1); ++i)  
+        {
+            acadoVariables.x[ NX * i + 0 ] = 0.0; // x
+            acadoVariables.x[ NX * i + 1 ] = 14.0; // y
+            acadoVariables.x[ NX * i + 2 ] = 0.0; // theta
+            acadoVariables.x[ NX * i + 3 ] = 15.0; // v 
+            acadoVariables.x[ NX * i + 4 ] = 0.0; // w
+        } 
     }
     for (i = 0; i < N; ++i)  
     {

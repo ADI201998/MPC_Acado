@@ -127,7 +127,7 @@ ament_package()
 #ament_target_dependencies(multi_circle_curve rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
 add_executable(combined_mpc src/combined_mpc.cpp)
-target_link_libraries(combined_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+target_link_libraries(combined_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver yaml-cpp)
 ament_target_dependencies(combined_mpc rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
 add_executable(behaviour_mpc src/behaviour_mpc.cpp)
