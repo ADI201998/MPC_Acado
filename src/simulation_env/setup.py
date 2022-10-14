@@ -26,6 +26,7 @@ setup(
             'behaviour_sim = simulation_env.behaviour_planning_tests:main',
             'behaviour_follow = simulation_env.behaviour_planning_follow:main',
             'behaviour_selection = simulation_env.behaviour_selection:main',
+            'behaviour_velcost = simulation_env.behaviour_planning_velcost:main',
             'behaviour_sim_multi = simulation_env.behaviour_planning_multi:main',
             'ngsim_test = simulation_env.ngsim_test:main',
         ],

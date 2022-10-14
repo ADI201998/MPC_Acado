@@ -134,6 +134,10 @@ add_executable(behaviour_mpc src/behaviour_mpc.cpp)
 target_link_libraries(behaviour_mpc  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(behaviour_mpc rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
 
+add_executable(behaviour_mpc_velcost src/behaviour_mpc_velcost.cpp)
+target_link_libraries(behaviour_mpc_velcost  ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
+ament_target_dependencies(behaviour_mpc_velcost rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
+
 add_executable(combined_mpc_multi src/combined_mpc_multi.cpp)
 target_link_libraries(combined_mpc_multi eigen-quadprog ${ACADO_ENV_SHARED_LIBRARIES} mpc_solver)
 ament_target_dependencies(combined_mpc_multi rclcpp std_msgs nav_msgs acado_msgs ${ACADO_ENV_SHARED_LIBRARIES})
@@ -169,6 +173,7 @@ install(TARGETS
   #multi_circle_curve
   combined_mpc
   behaviour_mpc
+  behaviour_mpc_velcost
   combined_mpc_cons
   combined_mpc_multi
   combined_mpc_multi2
