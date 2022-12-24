@@ -78,7 +78,7 @@ class GoalReach : public rclcpp::Node
     std::ofstream outdata;
 };
 
-GoalReach::GoalReach(): Node("combined_multi3"), count_(0)
+GoalReach::GoalReach(): Node("combined_ngsim"), count_(0)
 {
     service = this->create_service<acado_msgs::srv::GetControlsMulti>("/get_vel", std::bind(&GoalReach::get_vel_cb, this, _1, _2));
     got_odom = false;

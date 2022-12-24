@@ -28,6 +28,7 @@ setup(
             'behaviour_selection = simulation_env.behaviour_selection:main',
             'behaviour_sim_multi = simulation_env.behaviour_planning_multi:main',
             'ngsim_test = simulation_env.ngsim_test:main',
+            'ngsim_env = simulation_env.ngsim_env:main',
         ],
     },
 )
