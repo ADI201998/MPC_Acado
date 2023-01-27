@@ -49,7 +49,9 @@ class NGSIMTest(Node):
 		self.dt = 0.1
 
 		self.lane_y = [2.0, 6.0, 10.0, 14.0, 18.0, 22.0]
+		# self.lane_y = [6.0, 10.0, 14.0, 18.0]
 		self.dist_goal = 80.0
+		self.sorted_obs = []
 
 		#self.fig = plt.figure(0)
 		#self.ax1 = self.fig.add_subplot(111, aspect='equal')
@@ -85,6 +87,7 @@ class NGSIMTest(Node):
 		#print(obs_list.shape)
 		dist = np.sqrt((obs_list[:,0] - self.agent_pose[0])**2 + (obs_list[:,1] - self.agent_pose[1])**2)
 		sorted_obs = obs_list[dist.argsort()]
+		self.sorted_obs = sorted_obs
 		#print(sorted_obs.shape)
 
 		self.req.start.pose.pose.position.x = self.agent_pose[0]
@@ -139,12 +142,15 @@ class NGSIMTest(Node):
 		lane_info = PoseArray()
 		goals = PoseArray()
 		lanes = [2.0, 6.0, 10.0, 14.0, 18.0, 22.0]
+		# lanes = [6.0, 10.0, 14.0, 18.0]
 		cur_lane = lanes[np.argmin(np.abs(np.array(lanes) - self.agent_pose[1]))]
 		#lanes = [-2.0]
-		if cur_lane == 2.0:
-			lanes = [2.0, 6.0, 10.0, 2.0, 6.0, 10.0]
+		if cur_lane == 6.0:
+			lanes = [6.0, 10.0, 14.0, 6.0, 10.0, 14.0]
 		elif cur_lane == 22.0:
 			lanes = [14.0, 18.0, 22.0, 14.0, 18.0, 22.0]
+		# elif cur_lane == 18.0:
+		# 	lanes = [10.0, 14.0, 18.0, 10.0, 14.0, 18.0]
 		else:
 			lanes = [cur_lane - 4.0, cur_lane, cur_lane + 4.0]*2
 		##lanes = [2.0, 6.0, 10.0, 14.0, 18.0, 22.0]
@@ -184,7 +190,7 @@ class NGSIMTest(Node):
 		info.orientation.x = 0.0
 		info.orientation.y = 1.0
 		info.orientation.z = 0.0
-		info.orientation.w = -1.0
+		info.orientation.w = -5.0
 		lane_info.poses.append(info)
 
 		info = Pose()   #min rad cons
@@ -195,6 +201,7 @@ class NGSIMTest(Node):
 		info.orientation.y = 1.0
 		info.orientation.z = 0.0
 		info.orientation.w = -23.0
+		# info.orientation.w = -19.0
 		lane_info.poses.append(info)
 
 		info = Pose()   #min rad cons
@@ -227,17 +234,26 @@ class NGSIMTest(Node):
 	
 	
 	def plot_lanes(self):
-		plt.plot([-20000, 20000], [0, 0], color='black', linewidth=2.0)
-		plt.plot([-20000, 20000], [4, 4], color='black', linewidth=1.0)
+		#plt.plot([-20000, 20000], [0, 0], color='black', linewidth=2.0)
+		plt.plot([-20000, 20000], [4, 4], color='black', linewidth=2.0)
 		plt.plot([-20000, 20000], [8, 8], color='black', linewidth=1.0)
 		plt.plot([-20000, 20000], [12, 12], color='black', linewidth=1.0)
 		plt.plot([-20000, 20000], [16, 16], color='black', linewidth=1.0)
 		plt.plot([-20000, 20000], [20, 20], color='black', linewidth=1.0)
+		# plt.plot([-20000, 20000], [20, 20], color='black', linewidth=2.0)
 		plt.plot([-20000, 20000], [24, 24], color='black', linewidth=2.0)
+		#plt.plot([-20000, 20000], [28, 28], color='black', linewidth=2.0)
 	
 	def plot_obstacles(self):
-		for i in range(len(self.obs_list[0])):
-			obs = plt.Circle((self.obs_list[0][i], self.obs_list[1][i]), 1.0, color='r')
+		# for i in range(len(self.obs_list[0])):
+		# 	obs = plt.Circle((self.obs_list[0][i], self.obs_list[1][i]), 1.0, color='r')
+		# 	plt.gca().add_patch(obs)
+		color = 'r'
+		for i in range(len(self.sorted_obs)):
+			alpha = 0.25
+			if i<10:
+				alpha = 1.0
+			obs = plt.Circle((self.sorted_obs[i][0], self.sorted_obs[i][1]), 1.0, color='r', alpha=alpha)
 			plt.gca().add_patch(obs)
 		agent = plt.Circle((self.agent_pose[0], self.agent_pose[1]), 1.0, color='g')
 		plt.text(self.xlim, 33, 'Vel = %s'%(round(self.agent_vel[0],2)), fontsize=10)
@@ -296,8 +312,16 @@ class NGSIMTest(Node):
 		ang_idx = np.array(np.array(angular_vel)).argsort().argsort()
 		index = np.inf
 		min_cost = np.inf
+		print(obs_cost)
+		print(cruise_speed)
+		print(angular_vel)
+		print()
+		print(obs_idx)
+		print(cruise_idx)
+		print(ang_idx)
 		for i in range(len(self.lane_y)):
-			cost = 20*y_idx[i] + 40*obs_idx[i] + 1*cruise_idx[i] + 10*ang_idx[i]
+			# cost = 0*y_idx[i] + 1*obs_idx[i] + 1*cruise_idx[i] + 5*ang_idx[i]
+			cost = 0*y_idx[i] + 2*obs_idx[i] + 1*cruise_idx[i] + 5*ang_idx[i]
 			if cost<min_cost:
 				min_cost = cost
 				index = i
