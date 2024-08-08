@@ -282,6 +282,34 @@ GoalReach::GoalReach(): Node("combined_ngsim"), count_(0)
 
     
     //Behaviour Tests
+    // for (int i = 0; i < N; i++)
+    // {
+    //     acadoVariables.W[NY*NY*i + (NY+1)*0] = 0.0;     //x
+    //     acadoVariables.W[NY*NY*i + (NY+1)*1] = 0.0;     //y
+    //     acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
+    //     //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
+    //     //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
+    //     acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e6;        //j
+    //     //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
+    //     acadoVariables.W[NY*NY*i + (NY+1)*5] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*6] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*7] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*8] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*9] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*10] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*11] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*12] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*13] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*14] = 1.0*1e3;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*15] = 1000.0;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
+    // }
+
+    // acadoVariables.WN[(NYN+1)*0] = 5*1e6;
+	// acadoVariables.WN[(NYN+1)*1] = 5*1e6;
+	// acadoVariables.WN[(NYN+1)*2] = 5*1e6;
+
     for (int i = 0; i < N; i++)
     {
         acadoVariables.W[NY*NY*i + (NY+1)*0] = 0.0;     //x
@@ -289,19 +317,19 @@ GoalReach::GoalReach(): Node("combined_ngsim"), count_(0)
         acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
         //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
         //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
-        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
-        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e6;        //j
+        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e2;        //a
+        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1*1e3;        //j
         //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
-        acadoVariables.W[NY*NY*i + (NY+1)*5] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*6] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*7] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*8] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*9] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*10] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*11] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*12] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*13] = 1.0*1e3;
-        acadoVariables.W[NY*NY*i + (NY+1)*14] = 1.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*5] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*6] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*7] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*8] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*9] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*10] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*11] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*12] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*13] = 4.0*1e3;
+        acadoVariables.W[NY*NY*i + (NY+1)*14] = 4.0*1e3;
         acadoVariables.W[NY*NY*i + (NY+1)*15] = 1000.0;
         acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
     }
@@ -311,33 +339,33 @@ GoalReach::GoalReach(): Node("combined_ngsim"), count_(0)
 	acadoVariables.WN[(NYN+1)*2] = 5*1e6;
 
 
-    /*for (int i = 0; i < N; i++)
-    {
-        acadoVariables.W[NY*NY*i + (NY+1)*0] = 0.0;     //x
-        acadoVariables.W[NY*NY*i + (NY+1)*1] = 0.0;     //y
-        acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
-        //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
-        //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
-        acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e4;        //a
-        acadoVariables.W[NY*NY*i + (NY+1)*4] = 1.25*1e6;        //j
-        //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
-        acadoVariables.W[NY*NY*i + (NY+1)*5] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*6] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*7] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*8] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*9] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*10] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*11] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*12] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*13] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*14] = 1.3*1e6;
-        acadoVariables.W[NY*NY*i + (NY+1)*15] = 1*1e5;
-        acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
-    }
+    // for (int i = 0; i < N; i++)
+    // {
+    //     acadoVariables.W[NY*NY*i + (NY+1)*0] = 0.0;     //x
+    //     acadoVariables.W[NY*NY*i + (NY+1)*1] = 0.0;     //y
+    //     acadoVariables.W[NY*NY*i + (NY+1)*2] = 0;          //v
+    //     //acadoVariables.W[NY*NY*i + (NY+1)*2] = 500;  # Lane change
+    //     //acadoVariables.W[NY*NY*i + (NY+1)*3] = 500;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*3] = 1*1e3;        //a
+    //     acadoVariables.W[NY*NY*i + (NY+1)*4] = 1.0*1e4;        //j
+    //     //acadoVariables.W[NY*NY*i + (NY+1)*5] = 0.0;         //lane_dist
+    //     acadoVariables.W[NY*NY*i + (NY+1)*5] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*6] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*7] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*8] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*9] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*10] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*11] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*12] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*13] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*14] = 5.0*1e6;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*15] = 1*1e5;
+    //     acadoVariables.W[NY*NY*i + (NY+1)*16] = 0.0;
+    // }
 
-    acadoVariables.WN[(NYN+1)*0] = 5*1e9;
-	acadoVariables.WN[(NYN+1)*1] = 5*1e9;
-	acadoVariables.WN[(NYN+1)*2] = 1*1e10;*/
+    // acadoVariables.WN[(NYN+1)*0] = 5*1e9;
+	// acadoVariables.WN[(NYN+1)*1] = 5*1e9;
+	// acadoVariables.WN[(NYN+1)*2] = 1*1e10;
 
 
     for (int i = 0; i < N; i++)

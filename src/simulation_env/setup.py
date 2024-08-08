@@ -27,11 +27,13 @@ setup(
             'behaviour_follow = simulation_env.behaviour_planning_follow:main',
             'behaviour_selection = simulation_env.behaviour_selection:main',
             'behaviour_multi_goal = simulation_env.behaviour_multi_goal:main',
+            'behaviour_multi_goal_var_vel = simulation_env.behaviour_multi_goal_var_vel:main',
             'behaviour_velcost = simulation_env.behaviour_planning_velcost:main',
             'behaviour_sim_multi = simulation_env.behaviour_planning_multi:main',
             'ngsim_test = simulation_env.ngsim_test:main',
             'ngsim_env = simulation_env.ngsim_env:main',
             'combined_sim_new = simulation_env.combined_sim_new:main',
+            'emergent_test = simulation_env.emergent_test:main',
         ],
     },
 )

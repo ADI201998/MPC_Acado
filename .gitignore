@@ -1,7 +1,6 @@
 crossing-10m.txt
-src/simulation_env/i-80-traj-new-400-415.csv
-src/simulation_env/i-80-traj-new-500-515.csv
-src/simulation_env/i-80-traj-new-515-530.csv
+src/simulation_env/*.csv
+src/simulation_env/*.zip
 curved-ideal.txt
 get_data2.py
 plot.py

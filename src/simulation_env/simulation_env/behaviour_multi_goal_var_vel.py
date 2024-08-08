@@ -52,15 +52,25 @@ class Behaviour(Node):
 		self.wait = False
 
 		# Use this for overtake and combined with pedestrian
-		self.obs = np.array([[-10.0, -2.0, 0.0, 10.0, 0.0],
+		# self.obs = np.array([[-10.0, -2.0, 0.0, 10.0, 0.0],
+		# 					[25.0, 2.0, 0.0, 11.0, 0.0],
+		# 					[30.0, -2.0, 0.0, 9.0, 0.0],
+		# 					[65.0, 2.0, 0.0, 10.5, 0.0],
+		# 					[65.0, -2.0, 0.0, 9.5, 0.0],
+		# 					[95.0, 2.0, 0.0, 10.2, 0.0],
+		# 					[100.0, -2.0, 0.0, 10.8, 0.0],
+		# 					[140.0, 2.0, 0.0, 9.2, 0.0],
+		# 					[135.0, -2.0, 0.0, 9.8, 0.0],
+		# 					[-30.0, 2.0, 0.0, 10.0, 0.0]])
+		self.obs = np.array([[-10.0, -2.0, 0.0, -10.0, 0.0],
 							[25.0, 2.0, 0.0, 11.0, 0.0],
-							[30.0, -2.0, 0.0, 9.0, 0.0],
+							[30.0, -2.0, 0.0, -9.0, 0.0],
 							[65.0, 2.0, 0.0, 10.5, 0.0],
-							[65.0, -2.0, 0.0, 9.5, 0.0],
+							[65.0, -2.0, 0.0, -9.5, 0.0],
 							[95.0, 2.0, 0.0, 10.2, 0.0],
-							[100.0, -2.0, 0.0, 10.8, 0.0],
+							[100.0, -2.0, 0.0, -10.8, 0.0],
 							[140.0, 2.0, 0.0, 9.2, 0.0],
-							[135.0, -2.0, 0.0, 9.8, 0.0],
+							[135.0, -2.0, 0.0, -9.8, 0.0],
 							[-30.0, 2.0, 0.0, 10.0, 0.0]])
 
 		# Use this for follow vehicle only behaviour
@@ -169,10 +179,10 @@ class Behaviour(Node):
 			self.obs_pedestrian[0][2] = -self.sign*np.pi/2#self.obs_pedestrian[0][2]
 			self.obs_pedestrian[0][3] = 0.0
 		
-		for i in range(len(self.obs)):
-			if self.obs[i][3]<self.obs_vel[i] and self.move:
-				self.obs[i][3] = self.obs[i][3] + 4.0*self.dt
-				# print("++++++++++++++++++++++++++", self.obs[i][3], self.obs_vel[i])
+		# for i in range(len(self.obs)):
+		# 	if self.obs[i][3]<self.obs_vel[i] and self.move:
+		# 		self.obs[i][3] = self.obs[i][3] + 4.0*self.dt
+		# 		# print("++++++++++++++++++++++++++", self.obs[i][3], self.obs_vel[i])
 		
 		#lane_cons, goal = self.br_cons(0.0)
 		self.req.goal = goal
@@ -380,8 +390,12 @@ class Behaviour(Node):
 			self.obs[i][2] = self.obs[i][2] + self.obs[i][4]*self.dt
 			self.obs[i][1] = self.obs[i][1] + self.obs[i][3]*np.sin(self.obs[i][2])*self.dt
 			self.obs[i][0] = self.obs[i][0] + self.obs[i][3]*np.cos(self.obs[i][2])*self.dt
-			if self.obs[i][0]-self.agent_pose[0]<-70.0:
-				self.obs[i][0] = self.obs[i][0] + 150.0
+			if self.obs[i][3]<0:
+				if self.obs[i][0]-self.agent_pose[0]<-30.0:
+					self.obs[i][0] = self.obs[i][0] + 250.0
+			if self.obs[i][3]>0:
+				if self.obs[i][0]-self.agent_pose[0]<-70.0:
+					self.obs[i][0] = self.obs[i][0] + 150.0
 		self.obs_pedestrian[0][2] = self.obs_pedestrian[0][2] + self.obs_pedestrian[0][4]*self.dt
 		self.obs_pedestrian[0][1] = self.obs_pedestrian[0][1] + self.obs_pedestrian[0][3]*np.sin(self.obs_pedestrian[0][2])*self.dt
 		self.obs_pedestrian[0][0] = self.obs_pedestrian[0][0] + self.obs_pedestrian[0][3]*np.cos(self.obs_pedestrian[0][2])*self.dt
@@ -452,7 +466,7 @@ class Behaviour(Node):
 		for i in range(len(self.obs)):
 			dist = np.sqrt((self.agent_pose[0] - self.obs[i][0])**2 + (self.agent_pose[1] - self.obs[i][1])**2)
 			if dist<self.radius:
-				target_cruise_speed = target_cruise_speed + self.obs[i][3]
+				target_cruise_speed = target_cruise_speed + abs(self.obs[i][3])
 				total_obs_in_rad = total_obs_in_rad + 1
 		target_cruise_speed = target_cruise_speed/total_obs_in_rad
 		print(target_cruise_speed)
@@ -461,15 +475,27 @@ class Behaviour(Node):
 
 
 		for i in range(len(self.goal_p.poses)):
-			res_obs_x = np.linalg.norm(self.path_x[i*51:i*51 + 51] - self.nearest_obstacles[:, :51], axis=1)
-			res_obs_y = np.linalg.norm(self.path_y[i*51:i*51 + 51] - self.nearest_obstacles[:, 51:], axis=1)
-			res_obs = np.vstack((res_obs_x, res_obs_y))
-			res_obs = np.linalg.norm(res_obs, axis=0)
-			obs_cost.append(1/np.min(res_obs))
+			dist_x = 0.0
+			dist_y = 0.0
+			dists = []
+			for j in range(10):
+				dist_x = np.abs(self.path_x[i*51:i*51 + 51] - self.nearest_obstacles[j, :51])
+				dist_y = np.abs(self.path_y[i*51:i*51 + 51] - self.nearest_obstacles[j, 51:])
+				dists.append(np.min((dist_x**2 + dist_y**2)**0.5)) 
+			# dists = (dist_x**2 + dist_y**2)**0.5
+			res_obs = np.min(dists)
+			print(res_obs)
+			obs_cost.append(1/res_obs)
+			# res_obs_x = np.linalg.norm(self.path_x[i*51:i*51 + 51] - self.nearest_obstacles[:, :51], axis=1)
+			# res_obs_y = np.linalg.norm(self.path_y[i*51:i*51 + 51] - self.nearest_obstacles[:, 51:], axis=1)
+			# res_obs = np.vstack((res_obs_x, res_obs_y))
+			# res_obs = np.linalg.norm(res_obs, axis=0)
+			# obs_cost.append(1/np.min(res_obs))
 			y_dist.append(np.linalg.norm(self.path_y[i*51:i*51 + 51] - 14.0))
 			kkt_cost.append(kkt[i])
 			cruise_speed.append(np.linalg.norm(self.path_v[i*51:i*51 + 51] - target_cruise_speed))
 			angular_vel.append(np.linalg.norm(self.path_w[i*51:i*51 + 51] - 0.0))
+		# quit()
 		obs_idx = np.array(np.array(obs_cost)).argsort().argsort()
 		y_idx = np.array(np.array(y_dist)).argsort().argsort()
 		kkt_idx = np.array(np.array(kkt_cost)).argsort().argsort()
@@ -480,6 +506,7 @@ class Behaviour(Node):
 		costs = []
 		for i in range(len(self.goal_p.poses)):
 			cost = 0*y_idx[i] + 1*obs_idx[i] + 2*cruise_idx[i] + 0*ang_idx[i]
+			# cost = 0*y_idx[i] + 2*obs_idx[i] + 0*cruise_idx[i] + 0*ang_idx[i]
 			costs.append(cost)
 			# cost = 0*y_idx[i] + 5*obs_idx[i] + 2*cruise_idx[i] + 2*ang_idx[i]
 			if cost<min_cost:
